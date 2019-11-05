@@ -13,10 +13,12 @@ After configuring a few variables and running the script, it will go through and
 3. ./linper.sh
 
 ## what it does
-It writes bind shells and reverse shells in the current users bashrc and crontab files and reports when one was successfully written
+It writes reverse shells in the current users bashrc and crontab files and reports when one was successfully written
 
-The backdoors are executed in the background of a sleep command so, either success or fail, nothing will be printed to screen
+The backdoors are executed in the background of a sleep command to minimize the amount of times the backdoors print to screen. The one instance this will happen is if the python backdoor errors out AND the user causes a second error (both error message will, then, print to screen)
+
+It relies wither on python or bash for handling the shell
 
 Bashrc files are executed whenenver the user invokes a bash terminal, typically when they open terminal or ssh into the box
 
-Cron files are used to create cron jobs that execute according to the interval specified in the *cron* variable of linper.sh
+The crontab does not rely on files for execution, all files written to (to set the cron) are written to ram disk

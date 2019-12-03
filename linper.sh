@@ -1,6 +1,6 @@
 #!/bin/bash
 
-attackBox=1.0.0.0
+attackBox=0.0.0.0
 attackPort=5253
 cron="* * * * *"
 

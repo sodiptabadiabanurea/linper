@@ -1,7 +1,7 @@
 # linper
 Automated Linux Persistence Establishment
 
-After configuring a few variables and running the script, it will go through and configure multiple methods of persistance using a combination of reverse and bind shells
+After configuring a few variables and running the script, it will go through and configure multiple methods of persistance using reverse shells in various location.
 
 ## files
 - README.md - or not
@@ -9,16 +9,22 @@ After configuring a few variables and running the script, it will go through and
 
 ## usage
 1. Configure attackBox, attackPort, and cron in linper.sh appropiately (the only one that needs any kind of quotation marks is cron)
-2. Move linper.sh to target
+2. Move linper.sh to target and set the executable bit
 3. ./linper.sh
 
 ## what it does
-It writes reverse shells in the current users bashrc and crontab files. If you are root, it will parse the shadow file and write to /etc/rc.local, subsequently setting the executable bit.
+The following list of things is dependant on what is installed on the target.
 
-It is designed not to overwrite anything on the system, only append to.
+### if ran as a user with the HOME variable set 
+- appends to or creates ~/.bashrc
+	- netcat reverse shell
+	- python reverse shell
 
-The backdoors are executed in the background of a sleep command to minimize the amount of times the backdoors print to screen. The one instance this will happen is if the python backdoor errors out AND the user causes a second error (both error message will, then, print to screen). It relies either on python or bash for handling the shell
-
-Bashrc files are executed whenenver the user invokes a bash terminal, typically when they open terminal or ssh into the box
-The crontab does not rely on files for execution, all files written to (to set the cron) are written to ram disk
-/etc/rc.local is executed ata startup
+### if ran as root
+- appends to or creates /etc/rc.local
+	- netcat reverse shell
+	- python reverse shell
+- parses the shadow file
+- appends to or creates crontab
+	- netcat reverse shell
+	- python reverse shell

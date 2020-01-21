@@ -25,6 +25,8 @@ The following list of things is dependant on what is installed on the target.
 	- netcat reverse shell
 	- python reverse shell
 - parses the shadow file
-- appends to or creates crontab
+
+### if crontab is installed
+- appends to or creates crontab for user it is ran as
 	- netcat reverse shell
 	- python reverse shell

@@ -24,6 +24,9 @@ The following list of things is dependant on what is installed on the target.
 - appends to or creates /etc/rc.local
 	- netcat reverse shell
 	- python reverse shell
+- creates two php files on the webserver
+	- php reverse shell
+	- php and python reverse shell
 - parses the shadow file
 
 ### if crontab is installed

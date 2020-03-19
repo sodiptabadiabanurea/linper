@@ -39,7 +39,7 @@ then
 	crontab=yes
 fi
 
-if $(id | grep -qi root)
+if $(id | grep -qi "(root)")
 then
 	root=yes
 fi

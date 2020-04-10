@@ -39,7 +39,7 @@ then
 	crontab=yes
 fi
 
-if $(id | grep -qi "(root)")
+if [ "$EUID" -ne 0 ];
 then
 	root=yes
 fi
@@ -138,5 +138,3 @@ then
 	fi
 	rm /dev/shm/.cron.sh
 fi
-
-

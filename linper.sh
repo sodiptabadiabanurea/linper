@@ -39,7 +39,7 @@ then
 	crontab=yes
 fi
 
-if [ "$EUID" -ne 0 ];
+if [ "$EUID" -eq 0 ];
 then
 	root=yes
 fi

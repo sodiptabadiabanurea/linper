@@ -22,4 +22,4 @@ Assuming all prerequisites are met, the script does the following:
 5. Pulls users with a password from the shadow file (root required)
 
 ## warning
-Putting the reverse shells in the current users bashrc will cause errors to show up in the users terminal if the connection fails, and since multple are ran, if one connects, the rest will fail. I am working on a workaround to suppress all output but nothing substantial yet. If you need to be extra stealthy and do not want to put anything in the bashrc, comment out the check for the HOME variable, lines 46 through 49.
+Putting the reverse shells in the current users bashrc will cause errors to show up in the users terminal if the connection fails, and since multple are ran, if one connects, the rest will fail. I am working on a workaround to suppress all output but nothing substantial yet. If you need to be extra stealthy and do not want to put anything in the bashrc, comment out the check for the HOME variable.

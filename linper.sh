@@ -2,6 +2,7 @@
 
 attackBox=0.0.0.0
 attackPort=5253
+cron="* * * * *"
 
 if [ "$EUID" -eq 0 ];
 then
@@ -41,7 +42,6 @@ fi
 if $(which crontab | grep -qi crontab)
 then
 	crontab="yes"
-	cron="* * * * *"
 fi
 
 if $(which systemctl | grep -qi systemctl)

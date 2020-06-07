@@ -18,7 +18,7 @@ Assuming all prerequisites are met, the script does the following:
 1. Writes to the current users crontab
 2. Writes to the current users bashrc
 3. Creates services and enables them to run at startup (root required)
-4. Writes a PHP webshell to /var/www/html/ (root required)
+4. Writes a PHP webshell to www-data's home directory and all subdirectories (root or www-data required)
 5. Pulls users with a password from the shadow file (root required)
 
 ## warning

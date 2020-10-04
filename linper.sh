@@ -17,14 +17,14 @@ enum() {
 		payload=$(echo $s | awk -F ',' '{print $3}')
 		if $(echo $method | grep -qi "[a-z]")
 		then
-			echo "method = " $method
-			echo "eval staement = " $eval_statement
-			echo "payload = " $payload
-			echo
-			$eval_statement | $SHELL
+			#echo "method = " $method
+			#echo "eval staement = " $eval_statement
+			#echo "payload = " $payload
+			#echo
+			echo "$eval_statement" | $SHELL 2> /dev/null
 			if [ $? -eq 0 ];
 			then
-				echo $method "works"
+				echo -e "\e[92m[+]\e[0m $method"
 			fi
 		fi
 	done

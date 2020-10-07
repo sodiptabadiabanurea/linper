@@ -106,7 +106,7 @@ enum_doors() {
 sudo_hijack_attack () {
 if $(cat /etc/group | grep sudo | grep -qi $(whoami));
 then
-	echo "[+] Sudo Hijack Attack Possible"
+	echo -e "\e[92m[+]\e[0m Sudo Hijack Attack Possible"
 	echo "-----------------------"
 	#echo 'function sudo () {
 	#	realsudo="$(which sudo)"
@@ -127,7 +127,7 @@ fi
 webserver_poison_attack () {
 	if $(grep -qi "www-data" /etc/passwd)
 	then
-		echo "[+] Web Server Poison Attack Available for the Following Directories"
+		echo -e "\e[92m[+]\e[0m Web Server Poison Attack Available for the Following Directories"
 		for i in $(find $(grep --color=never "www-data" /etc/passwd | awk -F: '{print $6}') -type d);
 		do
 			echo "$i"

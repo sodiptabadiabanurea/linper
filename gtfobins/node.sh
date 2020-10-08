@@ -1,3 +1,5 @@
+linper=yes
+
 #!/bin/bash
 
 export RHOST=0.0.0.0

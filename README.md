@@ -7,6 +7,7 @@ Automatically install multiple methods of persistence, or just enumerate possibl
 ## files
 
 - README.md - or not
+- TODO.md - planned fixes & enhancements
 - linper.sh - execute on target
 - gtfobins/ - directory containing (possibly modified) snippets of code from [gtfobins](https://gtfobins.github.io/) as I am working on integrating them into the overall script
 

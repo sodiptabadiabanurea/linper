@@ -14,5 +14,5 @@
 - Add /etc/rc.local startup persistence
 - Finish adding GTFOBins
 - Add stealth mode
--- Do not append to bashrc
--- Hide ".service" files
+	- Do not append to bashrc
+	- Hide ".service" files

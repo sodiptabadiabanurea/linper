@@ -2,7 +2,7 @@
 
 ## Fixes
 
-- Fix Python (how to get '"' around RHOST and SHELL?)
+- ~~Fix Python (how to get '"' around RHOST and SHELL?)~~
 - Fix PHP
 - Fix Perl
 - Fix Node

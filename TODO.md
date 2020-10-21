@@ -18,3 +18,4 @@
 - Add stealth mode
 	- Do not append to bashrc
 	- Hide ".service" files
+- Add remove/cleanup function

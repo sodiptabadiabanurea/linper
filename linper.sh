@@ -205,9 +205,9 @@ shadow () {
 
 main (){
 	enum_methods
-	#sudo_hijack_attack $PASSWDFILE
-	#webserver_poison_attack
-	#shadow
+	sudo_hijack_attack $PASSWDFILE
+	webserver_poison_attack
+	shadow
 }
 
 main

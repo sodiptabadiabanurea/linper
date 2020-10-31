@@ -130,10 +130,6 @@ enum_doors() {
 						echo "[+] Door Found: $DOOR"
 						if [ "$DRYRUN" -eq 0 ];
 						then
-							#if $(echo $HINGE | grep -qi systemctl);
-							#then
-							#	TMPSERVICE=.$(mktemp -u | sed 's/.*\.//g').service
-							#fi
 							echo "$HINGE" | $SHELL 2> /dev/null &> /dev/null && echo " - Persistence Installed: $METHOD using $DOOR"
 						fi
 					fi

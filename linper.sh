@@ -183,7 +183,7 @@ enum_doors() {
 	echo "-----------------------"
 }
 
-sudo_hijack_attack () {
+sudo_hijack_attack() {
 	if $(cat /etc/group | grep sudo | grep -qi $(whoami));
 	then
 		if [ "$DRYRUN" -eq 0 ];
@@ -209,7 +209,7 @@ sudo_hijack_attack () {
 	fi
 }
 
-webserver_poison_attack () {
+webserver_poison_attack() {
 	if $(grep -qi "www-data" /etc/passwd)
 	then
 		if $(find $(grep --color=never "www-data" /etc/passwd | awk -F: '{print $6}') -writable -type d 2> /dev/null | grep -qi "[A-Za-z0-9]")
@@ -227,7 +227,7 @@ webserver_poison_attack () {
 	fi
 }
 
-shadow () {
+shadow() {
 	if $(find /etc/shadow -readable | grep -qi shadow)
 	then
 		if [ "$DRYRUN" -eq 0 ];
@@ -241,7 +241,7 @@ shadow () {
 	fi
 }
 
-main (){
+main() {
 	enum_methods
 	sudo_hijack_attack $PASSWDFILE
 	webserver_poison_attack

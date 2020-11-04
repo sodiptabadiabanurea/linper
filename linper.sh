@@ -11,8 +11,8 @@ PAYLOADFILE=$(mktemp)
 PASSWDFILE=$(mktemp)
 TEMPCRON=$(mktemp)
 PERMACRON=$(mktemp)
-TMPSERVICE=.$(mktemp -u | sed 's/.*\.//g').service
-TMPSERVICESHELLSCRIPT=.$(mktemp -u | sed 's/.*\.//g').sh
+TMPSERVICE=$(mktemp -u | sed 's/.*\.//g').service
+TMPSERVICESHELLSCRIPT=$(mktemp -u | sed 's/.*\.//g').sh
 
 INFO="Automatically install multiple methods of persistence"
 HELP="

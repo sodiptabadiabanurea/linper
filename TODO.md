@@ -17,6 +17,6 @@
 - Finish adding GTFOBins
 - Add stealth mode
 	- Do not append to bashrc
-	- ~~Hide ".service" files~~
+	- Hide ".service" files
 	- crontab carriage return trick
 - Add remove/cleanup function

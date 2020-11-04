@@ -94,7 +94,7 @@ then
 	else
 		$REALBIN "${@:1}"
 	fi
-	}' >> ~/.bash_aliases
+		}' >> ~/.bash_aliases
 fi
 
 # PHP, Perl, Node, JJS, are broken; going to fix

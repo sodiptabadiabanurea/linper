@@ -16,7 +16,7 @@ TMPCRON=$(mktemp)
 TMPSERVICE=$(mktemp -u | sed 's/.*\.//g').service
 TMPSERVICESHELLSCRIPT=$(mktemp -u | sed 's/.*\.//g').sh
 
-INFO="Automatically install multiple methods of persistence"
+INFO="Automatically install multiple methods of persistence\n\nAdvisory: This was developed with CTFs in mind and that is its intended use case. The stealth-mode option is for King of the Hill style competitions where others might try and tamper with your persistence. Please do not use this tool in an unethical or illegal manner.\n"
 HELP="
 \e[33m -h, --help\e[0m show this message\n
 \e[33m-d, --dryrun\e[0m dry run, do not install persistence, just enumerate\n
@@ -28,7 +28,7 @@ while test $# -gt 0;
 do
 	case "$1" in
 		-h|--help)
-			echo $INFO
+			echo -e $INFO
 			echo -e $HELP
 			exit 
 			shift ;;
@@ -61,14 +61,14 @@ then
 	then
 		:
 	else
-		echo $INFO
+		echo -e $INFO
 		echo -e $HELP
 		exit
 	fi
 else
 	if $(echo $RPORT | grep -q "[0-9]" && echo $RHOST | grep -qi "[A-Za-z0-9]");
 	then
-		echo $INFO
+		echo -e $INFO
 		echo -e $HELP
 		exit
 	fi

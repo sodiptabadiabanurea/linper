@@ -6,7 +6,7 @@
 - ~~Fix PHP~~
 - Fix Perl
 - Fix Node
-- Fix JJS
+- ~~Fix JJS~~
 - ~~Figure out why some methods work with systemctl and some don't~~
 - ~~Fix/Supress `find: ‘/var/www’: No such file or directory` error in webserver poison function~~
 

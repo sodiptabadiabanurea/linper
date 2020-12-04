@@ -2,7 +2,6 @@
 
 ## Fixes
 
-- Come up with a way to address the situation where SHELL is not set
 - Fix Perl
 - Fix Node
 - ~~Fix Python (how to get '"' around RHOST and SHELL?)~~
@@ -11,6 +10,7 @@
 - ~~Fix JJS~~
 - ~~Figure out why some methods work with systemctl and some don't~~
 - ~~Fix/Supress `find: ‘/var/www’: No such file or directory` error in webserver poison function~~
+- ~~Come up with a way to address the situation where SHELL is not set~~
 
 ## Enhancements
 

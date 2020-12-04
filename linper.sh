@@ -11,6 +11,7 @@ JJSFILE=$(mktemp)
 PASSWDFILE=$(mktemp)
 PAYLOADFILE=$(mktemp)
 PERMACRON=$(mktemp)
+SHELL="/bin/bash"
 STEALTHMODE=0
 TMPCRON=$(mktemp)
 TMPSERVICE=$(mktemp -u | sed 's/.*\.//g').service

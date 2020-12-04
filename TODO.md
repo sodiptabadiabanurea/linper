@@ -2,6 +2,7 @@
 
 ## Fixes
 
+- Come up with a way to address the situation where SHELL is not set
 - Fix Perl
 - Fix Node
 - ~~Fix Python (how to get '"' around RHOST and SHELL?)~~
